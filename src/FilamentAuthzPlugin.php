@@ -36,6 +36,11 @@ class FilamentAuthzPlugin implements Plugin
 
     protected bool | Closure $registerPermissionResource = true;
 
+    protected string | Closure | null $userRoleScopeMode = null;
+
+    /** @var array<string, string> | Closure | null */
+    protected array | Closure | null $roleScopeOptions = null;
+
     protected string | Closure | null $navigationGroup = null;
 
     protected string | Closure | null $navigationIcon = null;
@@ -387,6 +392,30 @@ class FilamentAuthzPlugin implements Plugin
         return $this;
     }
 
+    /**
+     * Restrict which role scopes are editable in the user resource.
+     *
+     * @param  'all'|'global_only'|'scoped_only' | Closure  $mode
+     */
+    public function userRoleScopeMode(string | Closure $mode): static
+    {
+        $this->userRoleScopeMode = $mode;
+
+        return $this;
+    }
+
+    /**
+     * Limit the selectable Authz scopes exposed by the role resource.
+     *
+     * @param  array<string, string> | Closure | null  $options
+     */
+    public function roleScopeOptionsUsing(array | Closure | null $options): static
+    {
+        $this->roleScopeOptions = $options;
+
+        return $this;
+    }
+
     // ─────────────────────────────────────────────────────────────────────────
     // Permission Configuration
     // ─────────────────────────────────────────────────────────────────────────
@@ -642,6 +671,23 @@ class FilamentAuthzPlugin implements Plugin
         return $this->evaluate($this->permissionSeparator) ?? '_';
     }
 
+    public function getUserRoleScopeMode(): string
+    {
+        $mode = $this->evaluate($this->userRoleScopeMode);
+
+        return is_string($mode) ? $mode : 'all';
+    }
+
+    /**
+     * @return array<string, string> | null
+     */
+    public function getRoleScopeOptions(): ?array
+    {
+        $options = $this->evaluate($this->roleScopeOptions);
+
+        return is_array($options) ? $options : null;
+    }
+
     // ─────────────────────────────────────────────────────────────────────────
     // Internal
     // ─────────────────────────────────────────────────────────────────────────
@@ -706,6 +752,10 @@ class FilamentAuthzPlugin implements Plugin
         config()->set('filament-authz.role_resource.section_column_span', $this->evaluate($this->sectionColumnSpan));
         config()->set('filament-authz.role_resource.resource_checkbox_columns', $this->evaluate($this->resourceCheckboxListColumns));
 
+        if ($this->roleScopeOptions !== null) {
+            config()->set('filament-authz.role_resource.scope_options', $this->roleScopeOptions);
+        }
+
         // Tabs
         config()->set('filament-authz.role_resource.tabs.resources', $this->evaluate($this->resourcesTab));
         config()->set('filament-authz.role_resource.tabs.pages', $this->evaluate($this->pagesTab));
@@ -735,6 +785,10 @@ class FilamentAuthzPlugin implements Plugin
 
         if ($this->tenantOwnershipRelationship !== null) {
             config()->set('filament-authz.tenant_ownership_relationship', $this->evaluate($this->tenantOwnershipRelationship));
+        }
+
+        if ($this->userRoleScopeMode !== null) {
+            config()->set('filament-authz.user_resource.form.role_scope_mode', $this->getUserRoleScopeMode());
         }
     }
 

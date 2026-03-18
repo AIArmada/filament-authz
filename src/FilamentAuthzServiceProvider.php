@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AIArmada\FilamentAuthz;
 
+use AIArmada\CommerceSupport\Support\OwnerContext;
 use AIArmada\FilamentAuthz\Console\DiscoverCommand;
 use AIArmada\FilamentAuthz\Console\GeneratePoliciesCommand;
 use AIArmada\FilamentAuthz\Console\SeederCommand;
@@ -28,6 +29,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\View\Compilers\BladeCompiler;
+use Laravel\Octane\Events\RequestReceived;
 use Spatie\Permission\Contracts\PermissionsTeamResolver;
 use Spatie\Permission\Models\Permission as SpatiePermission;
 use Spatie\Permission\Models\Role as SpatieRole;
@@ -174,7 +176,7 @@ class FilamentAuthzServiceProvider extends ServiceProvider
             return;
         }
 
-        if (! class_exists(\AIArmada\CommerceSupport\Support\OwnerContext::class)) {
+        if (! class_exists(OwnerContext::class)) {
             return;
         }
 
@@ -193,12 +195,12 @@ class FilamentAuthzServiceProvider extends ServiceProvider
      */
     private function registerOctaneListeners(): void
     {
-        if (! class_exists(\Laravel\Octane\Events\RequestReceived::class)) {
+        if (! class_exists(RequestReceived::class)) {
             return;
         }
 
         $this->app['events']->listen(
-            \Laravel\Octane\Events\RequestReceived::class,
+            RequestReceived::class,
             function (): void {
                 app(PermissionRegistrar::class)->forgetCachedPermissions();
 

@@ -37,7 +37,9 @@ $panel->plugins([
         ->pagesTab(true)                    // Show pages tab
         ->widgetsTab(true)                  // Show widgets tab
         ->customPermissionsTab(true)        // Show custom tab
-        
+        ->userRoleScopeMode('all')          // all, global_only, scoped_only
+        ->roleScopeOptionsUsing(null)       // Limit selectable Authz scopes
+
         // Permission format
         ->permissionCase('snake')           // snake_case keys
         ->permissionSeparator(':')          // Use : separator
@@ -65,6 +67,8 @@ $panel->plugins([
 | `excludeWidgets()` | `array` | `[]` | Widgets to exclude |
 | `gridColumns()` | `int` | `2` | Form grid columns |
 | `checkboxColumns()` | `int` | `3` | Checkboxes per row |
+| `userRoleScopeMode()` | `string` | `'all'` | Limit user role editing to all/global/scoped roles |
+| `roleScopeOptionsUsing()` | `array\|Closure\|null` | `null` | Override the selectable Authz scopes in RoleResource |
 | `permissionCase()` | `string` | `'camel'` | Key case format |
 | `permissionSeparator()` | `string` | `'.'` | Key separator |
 | `scopeToTenant()` | `bool` | `true` | Enable tenant scoping |
@@ -219,6 +223,7 @@ Additional permissions beyond discovered entities.
 ```php
 'role_resource' => [
     'slug' => 'authz/roles',
+    'scope_options' => null, // Null => all AuthzScope rows
     'tabs' => [
         'resources' => true,
         'pages' => true,
@@ -227,6 +232,19 @@ Additional permissions beyond discovered entities.
     ],
     'grid_columns' => 2,
     'checkbox_columns' => 3,
+],
+```
+
+### User Resource UI
+
+```php
+'user_resource' => [
+    'form' => [
+        'fields' => ['name', 'email', 'password'],
+        'roles' => true,
+        'role_scope_mode' => 'all', // all, global_only, scoped_only
+        'permissions' => true,
+    ],
 ],
 ```
 

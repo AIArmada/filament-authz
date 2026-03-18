@@ -10,6 +10,7 @@ use AIArmada\FilamentAuthz\Support\UserAuthzForm;
 use AIArmada\FilamentAuthz\Tables\Actions\ImpersonateTableAction;
 use Filament\Actions;
 use Filament\Forms;
+use Filament\Panel;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -115,7 +116,7 @@ class UserResource extends Resource
         return static::canViewAny();
     }
 
-    public static function getSlug(?\Filament\Panel $panel = null): string
+    public static function getSlug(?Panel $panel = null): string
     {
         return (string) config('filament-authz.user_resource.slug', 'authz/users');
     }

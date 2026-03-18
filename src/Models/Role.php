@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace AIArmada\FilamentAuthz\Models;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Carbon;
 use Spatie\Permission\Contracts\Role as RoleContract;
 use Spatie\Permission\Guard;
 use Spatie\Permission\Models\Role as SpatieRole;
@@ -18,9 +20,9 @@ use Spatie\Permission\PermissionRegistrar;
  * @property string $id
  * @property string $name
  * @property string $guard_name
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, Permission> $permissions
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read Collection<int, Permission> $permissions
  * @property-read int|null $permissions_count
  */
 final class Role extends SpatieRole

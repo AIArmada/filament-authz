@@ -7,6 +7,7 @@ namespace AIArmada\FilamentAuthz\Services;
 use AIArmada\FilamentAuthz\Events\LeaveImpersonation;
 use AIArmada\FilamentAuthz\Events\TakeImpersonation;
 use Exception;
+use Illuminate\Auth\SessionGuard;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Foundation\Application;
 use InvalidArgumentException;
@@ -284,7 +285,7 @@ class ImpersonateManager
      */
     private function getAuthSessionKey(string $guard): string
     {
-        return 'login_' . $guard . '_' . sha1(\Illuminate\Auth\SessionGuard::class);
+        return 'login_' . $guard . '_' . sha1(SessionGuard::class);
     }
 
     /**

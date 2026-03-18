@@ -95,6 +95,16 @@ return [
         'auto_create' => true,
     ],
 
+    'role_resource' => [
+        'scope_options' => null,
+    ],
+
+    'user_resource' => [
+        'form' => [
+            'role_scope_mode' => 'all', // all, global_only, scoped_only
+        ],
+    ],
+
     // Permission key format
     'permissions' => [
         'separator' => '.',
@@ -179,12 +189,60 @@ Use Authz scopes to attach roles/permissions to any model (institutions, speaker
 use AIArmada\FilamentAuthz\Concerns\HasAuthzScope;
 use AIArmada\FilamentAuthz\Facades\Authz;
 
-class Institution extends Model
+class Workspace extends Model
 {
     use HasAuthzScope;
 }
 
-Authz::userCanInScope($user, 'event.update', $institution);
+Authz::userCanInScope($user, 'project.update', $workspace);
+```
+
+### Limiting Role Scope Options
+
+If your central panel should only expose a subset of scopes in the Role resource, provide an explicit options map.
+
+```php
+use AIArmada\FilamentAuthz\FilamentAuthzPlugin;
+
+FilamentAuthzPlugin::make()
+    ->roleScopeOptionsUsing([
+        'scope-id-1' => 'Team Members',
+        'scope-id-2' => 'Support Team',
+    ]);
+```
+
+Or through config:
+
+```php
+'role_resource' => [
+    'scope_options' => [
+        'scope-id-1' => 'Team Members',
+        'scope-id-2' => 'Support Team',
+    ],
+],
+```
+
+### Restricting User Role Editing By Scope
+
+The User resource can expose:
+
+- `all`
+- `global_only`
+- `scoped_only`
+
+```php
+FilamentAuthzPlugin::make()
+    ->userRoleScopeMode('global_only');
+```
+
+Or through config:
+
+```php
+'user_resource' => [
+    'form' => [
+        'role_scope_mode' => 'global_only',
+    ],
+],
 ```
 
 ## Commands

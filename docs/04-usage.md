@@ -163,12 +163,12 @@ Add scopes to your models:
 ```php
 use AIArmada\FilamentAuthz\Concerns\HasAuthzScope;
 
-class Institution extends Model
+class Workspace extends Model
 {
     use HasAuthzScope;
 }
 
-class Speaker extends Model
+class Project extends Model
 {
     use HasAuthzScope;
 }
@@ -179,9 +179,9 @@ Check permissions within a scope:
 ```php
 use AIArmada\FilamentAuthz\Facades\Authz;
 
-Authz::userCanInScope($user, 'event.update', $institution);
-Authz::withScope($speaker, fn () => $user->can('event.update'));
-Authz::userHasPermissionAcrossScopes($user, 'event.update'); // global or cross-scope
+Authz::userCanInScope($user, 'project.update', $workspace);
+Authz::withScope($project, fn () => $user->can('project.update'));
+Authz::userHasPermissionAcrossScopes($user, 'project.update'); // global or cross-scope
 ```
 
 When `central_app` is enabled, the Role resource includes a scope selector. Leave it empty for a global role.

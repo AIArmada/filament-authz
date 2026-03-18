@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AIArmada\FilamentAuthz\Actions;
 
 use Filament\Actions\Action;
+use Filament\Navigation\MenuItem;
 
 /**
  * Action to leave impersonation and return to the original user.
@@ -40,9 +41,9 @@ class LeaveImpersonationAction extends Action
             });
     }
 
-    public function asMenuItem(): \Filament\Navigation\MenuItem
+    public function asMenuItem(): MenuItem
     {
-        return \Filament\Navigation\MenuItem::make()
+        return MenuItem::make()
             ->label(__('filament-authz::filament-authz.impersonate.leave'))
             ->icon('heroicon-o-arrow-left-on-rectangle')
             ->color('danger')

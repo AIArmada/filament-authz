@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static array<string, string> getResourcePermissions(string $resourceClass, ?Panel $panel = null)
  * @method static void clearCache()
  *
- * @see \AIArmada\FilamentAuthz\Authz
+ * @see AuthzService
  */
 class Authz extends Facade
 {

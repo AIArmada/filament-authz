@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AIArmada\FilamentAuthz\Concerns;
 
 use AIArmada\FilamentAuthz\Models\Permission;
+use AIArmada\FilamentAuthz\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
 /**
@@ -12,7 +13,7 @@ use Spatie\Permission\PermissionRegistrar;
  *
  * Uses Spatie's syncPermissions() which handles the pivot table correctly.
  *
- * @property \AIArmada\FilamentAuthz\Models\Role $record
+ * @property Role $record
  * @property array<string, mixed> $data
  */
 trait SyncsRolePermissions

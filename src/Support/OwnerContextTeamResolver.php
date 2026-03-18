@@ -16,6 +16,9 @@ final class OwnerContextTeamResolver implements PermissionsTeamResolver
         return OwnerContext::resolve()?->getKey();
     }
 
+    /**
+     * @param  int|string|Model|null  $id
+     */
     public function setPermissionsTeamId($id): void
     {
         if ($id instanceof Model || $id === null) {

@@ -7,8 +7,10 @@ namespace AIArmada\FilamentAuthz\Console;
 use AIArmada\FilamentAuthz\Console\Concerns\Prohibitable;
 use AIArmada\FilamentAuthz\Facades\Authz;
 use Filament\Facades\Filament;
+use Filament\Panel;
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 use function Laravel\Prompts\info;
@@ -129,9 +131,9 @@ class GeneratePoliciesCommand extends Command
     }
 
     /**
-     * @return \Illuminate\Support\Collection<int, array<string, mixed>>
+     * @return Collection<int, array<string, mixed>>
      */
-    protected function getTargetResources(\Filament\Panel $panel): \Illuminate\Support\Collection
+    protected function getTargetResources(Panel $panel): Collection
     {
         $resources = Authz::getResources($panel);
         $targetNames = $this->option('resource');

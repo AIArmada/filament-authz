@@ -6,6 +6,7 @@ namespace AIArmada\FilamentAuthz\Support;
 
 use AIArmada\FilamentAuthz\Models\AuthzScope;
 use Filament\Forms\Components\Select;
+use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Section;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -16,7 +17,7 @@ use Spatie\Permission\PermissionRegistrar;
 final class UserAuthzForm
 {
     /**
-     * @return array<int, \Filament\Schemas\Components\Component>
+     * @return array<int, Component>
      */
     public static function components(): array
     {
@@ -142,6 +143,8 @@ final class UserAuthzForm
             ->orderBy('name')
             ->get($columns);
 
+        $roles = static::filterRolesByScopeMode($roles, $teamsKey, $registrar->teams);
+
         $scopeLabels = static::resolveScopeLabels($roles, $teamsKey, $registrar->teams);
         $options = [];
 
@@ -190,7 +193,7 @@ final class UserAuthzForm
             ->values()
             ->all();
 
-        if (! $registrar->teams || ! config('filament-authz.scoped_to_tenant', true)) {
+        if (! $registrar->teams) {
             $record->syncRoles($selectedRoleIds);
             $registrar->forgetCachedPermissions();
 
@@ -214,7 +217,7 @@ final class UserAuthzForm
 
         $selectedByScope = static::groupRoleIdsByScope($selectedRoles, $teamsKey);
         $existingByScope = static::groupRoleIdsByScope($existingRoles, $teamsKey);
-        $scopeKeys = array_values(array_unique([...array_keys($selectedByScope), ...array_keys($existingByScope)]));
+        $scopeKeys = static::determineEditableScopeKeys($selectedByScope, $existingByScope);
 
         $previousScope = getPermissionsTeamId();
 
@@ -241,7 +244,7 @@ final class UserAuthzForm
 
         $registrar = app(PermissionRegistrar::class);
 
-        if (! $registrar->teams || ! config('filament-authz.scoped_to_tenant', true)) {
+        if (! $registrar->teams) {
             return $record->roles()
                 ->pluck('id')
                 ->map(static fn (mixed $roleId): string => (string) $roleId)
@@ -279,6 +282,65 @@ final class UserAuthzForm
         }
 
         return $grouped;
+    }
+
+    /**
+     * @param  Collection<int, Model>  $roles
+     * @return Collection<int, Model>
+     */
+    protected static function filterRolesByScopeMode(Collection $roles, string $teamsKey, bool $teamsEnabled): Collection
+    {
+        $mode = static::getRoleScopeMode();
+
+        if (! $teamsEnabled || $mode === 'all') {
+            return $roles;
+        }
+
+        return $roles
+            ->filter(function (Model $role) use ($mode, $teamsKey): bool {
+                $scopeId = $role->getAttribute($teamsKey);
+                $isGlobal = ! is_scalar($scopeId) || (string) $scopeId === '';
+
+                return match ($mode) {
+                    'global_only' => $isGlobal,
+                    'scoped_only' => ! $isGlobal,
+                    default => true,
+                };
+            })
+            ->values();
+    }
+
+    /**
+     * @param  array<string, list<string>>  $selectedByScope
+     * @param  array<string, list<string>>  $existingByScope
+     * @return list<string>
+     */
+    protected static function determineEditableScopeKeys(array $selectedByScope, array $existingByScope): array
+    {
+        $mode = static::getRoleScopeMode();
+
+        return match ($mode) {
+            'global_only' => ['__global__'],
+            'scoped_only' => array_values(array_filter(
+                array_unique([...array_keys($selectedByScope), ...array_keys($existingByScope)]),
+                static fn (string $scopeKey): bool => $scopeKey !== '__global__',
+            )),
+            default => array_values(array_unique([...array_keys($selectedByScope), ...array_keys($existingByScope)])),
+        };
+    }
+
+    /**
+     * @return 'all'|'global_only'|'scoped_only'
+     */
+    protected static function getRoleScopeMode(): string
+    {
+        $mode = config('filament-authz.user_resource.form.role_scope_mode', 'all');
+
+        if (! is_string($mode) || ! in_array($mode, ['all', 'global_only', 'scoped_only'], true)) {
+            return 'all';
+        }
+
+        return $mode;
     }
 
     /**

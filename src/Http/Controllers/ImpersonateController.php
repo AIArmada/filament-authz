@@ -7,6 +7,7 @@ namespace AIArmada\FilamentAuthz\Http\Controllers;
 use AIArmada\FilamentAuthz\Actions\ImpersonateAction;
 use Filament\Facades\Filament;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -28,7 +29,7 @@ class ImpersonateController
         }
 
         // Get user model class from auth config
-        /** @var class-string<\Illuminate\Database\Eloquent\Model&Authenticatable> $userModelClass */
+        /** @var class-string<Model&Authenticatable> $userModelClass */
         $userModelClass = config('auth.providers.users.model');
 
         /** @var Authenticatable|null $targetUser */
