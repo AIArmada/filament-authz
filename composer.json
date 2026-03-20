@@ -1,6 +1,5 @@
 {
   "name": "aiarmada/filament-authz",
-  "version": "1.0.0",
   "description": "Filament v5 permissions suite powered by Spatie laravel-permission with multi-guard, panel-aware gating, and admin UX.",
   "license": "MIT",
   "homepage": "https://github.com/aiarmada/commerce",
