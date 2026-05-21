@@ -162,11 +162,17 @@ class FilamentAuthzServiceProvider extends ServiceProvider
 
     private function configureSpatiePermissions(): void
     {
-        if (config('permission.models.permission') === SpatiePermission::class) {
+        if (
+            config('permission.models.permission') === null
+            || config('permission.models.permission') === SpatiePermission::class
+        ) {
             config()->set('permission.models.permission', AuthzPermission::class);
         }
 
-        if (config('permission.models.role') === SpatieRole::class) {
+        if (
+            config('permission.models.role') === null
+            || config('permission.models.role') === SpatieRole::class
+        ) {
             config()->set('permission.models.role', AuthzRole::class);
         }
     }
