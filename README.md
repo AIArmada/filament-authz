@@ -11,13 +11,14 @@ A comprehensive Filament v5 authorization package extending Spatie laravel-permi
 - **Multi-Panel Support** — Configure different authorization settings per Filament panel
 - **Policy Generation** — CLI command to scaffold Laravel Policies based on discovered permissions
 - **Authz Scopes + Tenant Scoping** — Scope roles to any model (institutions, speakers, etc.) with central app support and optional commerce-support integration
+- **UUID-First Schema** — Permissions, roles, and pivot tables use UUID keys and follow Spatie Permission's documented UUID approach
 
 ## Requirements
 
 - PHP 8.4+
 - Laravel 12+
 - Filament 5.0+
-- Spatie laravel-permission 6.0+
+- Spatie laravel-permission 7.2+
 
 ## Installation
 
@@ -31,12 +32,14 @@ Publish the configuration:
 php artisan vendor:publish --tag=filament-authz-config
 ```
 
-Publish and run Spatie Permission migrations:
+Run migrations:
 
 ```bash
-php artisan vendor:publish --provider="Spatie\Permission\PermissionServiceProvider"
 php artisan migrate
 ```
+
+> `filament-authz` ships UUID-based migrations for Spatie Permission tables (`permissions`, `roles`, `model_has_permissions`, `model_has_roles`, and `role_has_permissions`) plus its own `authz_scopes` migration.
+> The schema, models, and pivot keys are all UUID-based together.
 
 ## Setup
 
@@ -55,10 +58,9 @@ class User extends Authenticatable
 
 ### Register Plugin
 
-Register the plugin in your Filament panel provider:
-
 ```php
 use AIArmada\FilamentAuthz\FilamentAuthzPlugin;
+use Filament\Panel;
 
 public function panel(Panel $panel): Panel
 {

@@ -18,6 +18,7 @@ use AIArmada\FilamentAuthz\Services\EntityDiscoveryService;
 use AIArmada\FilamentAuthz\Services\ImpersonateManager;
 use AIArmada\FilamentAuthz\Services\PermissionKeyBuilder;
 use AIArmada\FilamentAuthz\Services\WildcardPermissionResolver;
+use AIArmada\FilamentAuthz\Support\AuthzScopeContext;
 use AIArmada\FilamentAuthz\Support\AuthzScopeTeamResolver;
 use AIArmada\FilamentAuthz\Support\OwnerContextTeamResolver;
 use Illuminate\Auth\AuthManager;
@@ -51,6 +52,8 @@ class FilamentAuthzServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__ . '/../config/filament-authz.php', 'filament-authz');
 
         $this->configureSpatiePermissions();
+
+        $this->app->scoped(AuthzScopeContext::class, static fn (): AuthzScopeContext => new AuthzScopeContext);
 
         $this->app->singleton(FilamentAuthzPlugin::class);
         $this->app->singleton(WildcardPermissionResolver::class);

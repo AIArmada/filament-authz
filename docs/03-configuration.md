@@ -16,34 +16,44 @@ use AIArmada\FilamentAuthz\FilamentAuthzPlugin;
 $panel->plugins([
     FilamentAuthzPlugin::make()
         // Resource registration
-        ->roleResource()                    // Enable Role resource (default: true)
-        ->permissionResource(false)         // Disable Permission resource
-        
+        ->roleResource()                      // Enable Role resource (default: true)
+        ->permissionResource(false)           // Disable Permission resource
+
         // Navigation
-        ->navigationGroup('System')         // Sidebar group name
+        ->navigationGroup('System')           // Sidebar group name
         ->navigationIcon('heroicon-o-lock-closed')
+        ->activeNavigationIcon('heroicon-s-lock-closed')
+        ->navigationLabel('Access Control')   // Custom nav label
         ->navigationSort(5)
-        ->registerNavigation(true)          // Show in navigation
-        
+        ->registerNavigation(true)            // Show in navigation
+        ->navigationBadge(null)               // Optional badge text
+        ->navigationBadgeColor(null)          // Badge color
+        ->navigationParentItem(null)          // Nest under parent item
+        ->cluster(null)                       // Assign to a cluster
+
         // Entity exclusions
         ->excludeResources([UserResource::class])
         ->excludePages([Dashboard::class])
         ->excludeWidgets([AccountWidget::class])
-        
+
         // UI layout
-        ->gridColumns(3)                    // Tab grid columns
-        ->checkboxColumns(5)                // Permissions per row
-        ->resourcesTab(true)                // Show resources tab
-        ->pagesTab(true)                    // Show pages tab
-        ->widgetsTab(true)                  // Show widgets tab
-        ->customPermissionsTab(true)        // Show custom tab
-        ->userRoleScopeMode('all')          // all, global_only, scoped_only
-        ->roleScopeOptionsUsing(null)       // Limit selectable Authz scopes
+        ->gridColumns(3)                      // Tab grid columns
+        ->checkboxColumns(5)                  // Permissions per row
+        ->sectionColumnSpan(1)                // Column span for each section
+        ->resourceCheckboxListColumns(2)      // Checkbox columns inside resource sections
+        ->resourcesTab(true)                  // Show resources tab
+        ->pagesTab(true)                      // Show pages tab
+        ->widgetsTab(true)                    // Show widgets tab
+        ->customPermissionsTab(true)          // Show custom permissions tab
+        ->simpleResourcePermissionView(false) // Flat list instead of grouped view
+        ->localizePermissionLabels(false)     // Use lang file for permission labels
+        ->userRoleScopeMode('all')            // all, global_only, scoped_only
+        ->roleScopeOptionsUsing(null)         // Limit selectable Authz scopes
 
         // Permission format
-        ->permissionCase('snake')           // snake_case keys
-        ->permissionSeparator(':')          // Use : separator
-        
+        ->permissionCase('snake')             // snake_case keys
+        ->permissionSeparator(':')            // Use : separator
+
         // Multitenancy / scopes
         ->scopeToTenant()
         ->centralApp()
@@ -60,21 +70,35 @@ $panel->plugins([
 | `permissionResource()` | `bool\|Closure` | `true` | Register PermissionResource |
 | `navigationGroup()` | `string\|null` | config value | Sidebar group |
 | `navigationIcon()` | `string\|null` | config value | Icon override |
+| `activeNavigationIcon()` | `string\|null` | `null` | Active state icon |
+| `navigationLabel()` | `string\|null` | `null` | Custom nav label |
 | `navigationSort()` | `int\|null` | config value | Sort order |
 | `registerNavigation()` | `bool` | `true` | Show in sidebar |
-| `excludeResources()` | `array` | `[]` | Resources to exclude |
-| `excludePages()` | `array` | `[]` | Pages to exclude |
-| `excludeWidgets()` | `array` | `[]` | Widgets to exclude |
-| `gridColumns()` | `int` | `2` | Form grid columns |
-| `checkboxColumns()` | `int` | `3` | Checkboxes per row |
-| `userRoleScopeMode()` | `string` | `'all'` | Limit user role editing to all/global/scoped roles |
-| `roleScopeOptionsUsing()` | `array\|Closure\|null` | `null` | Override the selectable Authz scopes in RoleResource |
-| `permissionCase()` | `string` | `'camel'` | Key case format |
-| `permissionSeparator()` | `string` | `'.'` | Key separator |
-| `scopeToTenant()` | `bool` | `true` | Enable tenant scoping |
-| `centralApp()` | `bool` | `false` | Enable central app scope selector |
-| `tenantRelationshipName()` | `string` | `null` | Tenant relation name |
-| `tenantOwnershipRelationshipName()` | `string` | `null` | Tenant ownership relation name |
+| `navigationBadge()` | `string\|null` | `null` | Optional badge text |
+| `navigationBadgeColor()` | `string\|array\|null` | `null` | Badge color |
+| `navigationParentItem()` | `string\|null` | `null` | Nest under parent item |
+| `cluster()` | `class-string\|null` | `null` | Assign to a cluster |
+| `excludeResources()` | `array\|Closure` | `[]` | Resources to exclude from discovery |
+| `excludePages()` | `array\|Closure` | `[]` | Pages to exclude from discovery |
+| `excludeWidgets()` | `array\|Closure` | `[]` | Widgets to exclude from discovery |
+| `gridColumns()` | `int\|array\|Closure` | `2` | Tab form grid columns |
+| `checkboxColumns()` | `int\|array\|Closure` | `3` | Checkboxes per row |
+| `sectionColumnSpan()` | `int\|array\|Closure` | `1` | Column span per section |
+| `resourceCheckboxListColumns()` | `int\|array\|Closure` | `2` | Checkbox list columns inside resource sections |
+| `resourcesTab()` | `bool\|Closure` | `true` | Show resources tab |
+| `pagesTab()` | `bool\|Closure` | `true` | Show pages tab |
+| `widgetsTab()` | `bool\|Closure` | `true` | Show widgets tab |
+| `customPermissionsTab()` | `bool\|Closure` | `true` | Show custom permissions tab |
+| `simpleResourcePermissionView()` | `bool\|Closure` | `false` | Flat list instead of grouped view |
+| `localizePermissionLabels()` | `bool\|Closure` | `false` | Use lang files for permission labels |
+| `userRoleScopeMode()` | `string\|Closure\|null` | `null` | Limit user role editing: `all`, `global_only`, `scoped_only` |
+| `roleScopeOptionsUsing()` | `array\|Closure\|null` | `null` | Override selectable Authz scopes in RoleResource |
+| `permissionCase()` | `string\|null` | `'camel'` | Key case format |
+| `permissionSeparator()` | `string\|null` | `'.'` | Key separator |
+| `scopeToTenant()` | `bool\|Closure` | `true` | Enable tenant scoping |
+| `centralApp()` | `bool\|Closure` | `false` | Enable central app scope selector |
+| `tenantRelationshipName()` | `string\|null` | `null` | Tenant relation name |
+| `tenantOwnershipRelationshipName()` | `string\|null` | `null` | Tenant ownership relation name |
 
 ## Config File Reference
 
@@ -222,16 +246,18 @@ Additional permissions beyond discovered entities.
 
 ```php
 'role_resource' => [
-    'slug' => 'authz/roles',
-    'scope_options' => null, // Null => all AuthzScope rows
+    'slug'          => 'authz/roles',
+    'scope_options' => null, // null = all AuthzScope rows; pass array or Closure to restrict
     'tabs' => [
-        'resources' => true,
-        'pages' => true,
-        'widgets' => true,
+        'resources'          => true,
+        'pages'              => true,
+        'widgets'            => true,
         'custom_permissions' => true,
+        'direct_permissions' => true, // assign individual permissions directly to a role
     ],
-    'grid_columns' => 2,
-    'checkbox_columns' => 3,
+    'grid_columns'                => 2,
+    'checkbox_columns'            => 3,
+    'section_column_span'         => 1,
 ],
 ```
 
@@ -239,11 +265,20 @@ Additional permissions beyond discovered entities.
 
 ```php
 'user_resource' => [
+    'enabled'       => true,
+    'auto_register' => true,   // auto-register in the panel when enabled
+    'model'         => null,   // null = use app's User model; set to a FQCN to override
+    'slug'          => 'authz/users',
+    'navigation' => [
+        'group' => 'Authz',
+        'sort'  => 98,
+        'icon'  => 'heroicon-o-user-group',
+    ],
     'form' => [
-        'fields' => ['name', 'email', 'password'],
-        'roles' => true,
+        'fields'          => ['name', 'email', 'password'],
+        'roles'           => true,
         'role_scope_mode' => 'all', // all, global_only, scoped_only
-        'permissions' => true,
+        'permissions'     => true,
     ],
 ],
 ```
@@ -289,9 +324,17 @@ Enable multi-tenant support for roles and permissions.
 
 ```php
 'scoped_to_tenant' => true,
+'central_app' => false,
 ```
 
-When enabled, roles are filtered by the current tenant/scope context. Use Filament tenancy with `SyncAuthzTenant` or Authz Scopes with `Authz::withScope()`.
+When `scoped_to_tenant` is `true` and `central_app` is `false` (the default), the user role assignment form automatically:
+
+- **Filters role options** to only roles belonging to the current team/tenant.
+- **Validates on save** that all submitted role IDs belong to the current tenant scope, throwing an `AuthorizationException` if any cross-tenant role ID is submitted.
+
+Set `central_app => true` to disable this restriction and allow global role management across all tenants (e.g., in a super-admin panel).
+
+Use Filament tenancy with `SyncAuthzTenant` or Authz Scopes with `Authz::withScope()` to set the active team context.
 
 ## Environment Variables
 

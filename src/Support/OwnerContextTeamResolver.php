@@ -6,13 +6,19 @@ namespace AIArmada\FilamentAuthz\Support;
 
 use AIArmada\CommerceSupport\Support\OwnerContext;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
 use InvalidArgumentException;
 use Spatie\Permission\Contracts\PermissionsTeamResolver;
+use Throwable;
 
 final class OwnerContextTeamResolver implements PermissionsTeamResolver
 {
     public function getPermissionsTeamId(): int | string | null
     {
+        if (AuthzScopeContext::hasOverride()) {
+            return AuthzScopeContext::resolve();
+        }
+
         return OwnerContext::resolve()?->getKey();
     }
 
@@ -21,8 +27,16 @@ final class OwnerContextTeamResolver implements PermissionsTeamResolver
      */
     public function setPermissionsTeamId($id): void
     {
+        $resolvedId = $id instanceof Model ? $id->getKey() : $id;
+
+        AuthzScopeContext::set(is_scalar($resolvedId) || $resolvedId === null ? $resolvedId : null);
+
+        if (! $this->hasActiveHttpRequest()) {
+            return;
+        }
+
         if ($id instanceof Model || $id === null) {
-            OwnerContext::override($id);
+            OwnerContext::setForRequest($id);
 
             return;
         }
@@ -35,6 +49,17 @@ final class OwnerContextTeamResolver implements PermissionsTeamResolver
 
         $owner = OwnerContext::fromTypeAndId($teamType, $id);
 
-        OwnerContext::override($owner);
+        OwnerContext::setForRequest($owner);
+    }
+
+    private function hasActiveHttpRequest(): bool
+    {
+        try {
+            $request = app('request');
+
+            return $request instanceof Request;
+        } catch (Throwable) {
+            return false;
+        }
     }
 }

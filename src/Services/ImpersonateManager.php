@@ -122,7 +122,10 @@ class ImpersonateManager
             session()->put(self::SESSION_GUARD_USING, $guardName);
 
             if ($backTo !== null) {
-                session()->put(self::SESSION_BACK_TO, $backTo);
+                // Sanitize the back-to URL: only allow same-host absolute URLs
+                // or relative paths. Reject external hostnames to prevent open redirect
+                // via a controlled Referer header stored in the session.
+                session()->put(self::SESSION_BACK_TO, $this->sanitizeBackToUrl($backTo));
             }
 
             // Use quietLogout/quietLogin if available (custom guard), otherwise fallback
@@ -144,7 +147,7 @@ class ImpersonateManager
 
             // Update password hash in session to prevent AuthenticateSession middleware
             // from logging out the impersonated user (it validates password hash)
-            $this->updatePasswordHashInSession($to);
+            $this->updatePasswordHashInSession($to, $guardName);
 
             session()->save();
 
@@ -196,7 +199,8 @@ class ImpersonateManager
             }
 
             // Update password hash in session for the restored user
-            $this->updatePasswordHashInSession($impersonator);
+            $restoredGuardName = $this->getImpersonatorGuardName() ?? 'web';
+            $this->updatePasswordHashInSession($impersonator, $restoredGuardName);
 
             $this->clear();
 
@@ -281,6 +285,39 @@ class ImpersonateManager
     }
 
     /**
+     * Sanitize the back-to URL to prevent open redirect via a controlled Referer header.
+     *
+     * Accepts relative paths (e.g. /admin) and absolute same-host URLs.
+     * Rejects any URL pointing to a different host.
+     */
+    private function sanitizeBackToUrl(string $url): string
+    {
+        if ($url === '') {
+            return '/';
+        }
+
+        // Relative path — always safe.
+        if (str_starts_with($url, '/') && ! str_starts_with($url, '//')) {
+            return $url;
+        }
+
+        // Parse absolute URL and compare host against current request host.
+        $parsed = parse_url($url);
+
+        if (! is_array($parsed) || ! isset($parsed['host'])) {
+            return '/';
+        }
+
+        $requestHost = request()->getHost();
+
+        if (mb_strtolower($parsed['host']) !== mb_strtolower($requestHost)) {
+            return '/';
+        }
+
+        return $url;
+    }
+
+    /**
      * Get the session key used by Laravel Auth for a guard.
      */
     private function getAuthSessionKey(string $guard): string
@@ -294,7 +331,7 @@ class ImpersonateManager
      * This is required to prevent AuthenticateSession middleware from
      * logging out the user when it validates the password hash.
      */
-    private function updatePasswordHashInSession(Authenticatable $user): void
+    private function updatePasswordHashInSession(Authenticatable $user, string $guardName): void
     {
         if (! method_exists($user, 'getAuthPassword')) {
             return;
@@ -314,7 +351,6 @@ class ImpersonateManager
             $hashedPassword = $passwordHash;
         }
 
-        $driver = $this->app['config']->get('auth.defaults.guard', 'web');
-        session()->put('password_hash_' . $driver, $hashedPassword);
+        session()->put('password_hash_' . $guardName, $hashedPassword);
     }
 }

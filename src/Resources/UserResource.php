@@ -6,6 +6,7 @@ namespace AIArmada\FilamentAuthz\Resources;
 
 use AIArmada\FilamentAuthz\Facades\Authz;
 use AIArmada\FilamentAuthz\Resources\UserResource\Pages;
+use AIArmada\FilamentAuthz\Support\ImpersonationScopeGuard;
 use AIArmada\FilamentAuthz\Support\UserAuthzForm;
 use AIArmada\FilamentAuthz\Tables\Actions\ImpersonateTableAction;
 use Filament\Actions;
@@ -17,6 +18,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Auth\Access\Authorizable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -42,29 +44,63 @@ class UserResource extends Resource
         return (string) config("auth.providers.{$provider}.model", 'App\\Models\\User');
     }
 
+    public static function getEloquentQuery(): Builder
+    {
+        return ImpersonationScopeGuard::applyScopeToUserQuery(parent::getEloquentQuery());
+    }
+
     public static function canViewAny(): bool
     {
-        return static::checkAbility('viewAny');
+        return static::hasAuthzDirectoryAccess() && static::checkAbility('viewAny');
     }
 
     public static function canView(Model $record): bool
     {
-        return static::checkAbility('view');
+        return static::hasAuthzDirectoryAccess() && static::checkAbility('view');
     }
 
     public static function canCreate(): bool
     {
-        return static::checkAbility('create');
+        return static::hasAuthzDirectoryAccess() && static::checkAbility('create');
     }
 
     public static function canEdit(Model $record): bool
     {
-        return static::checkAbility('update');
+        return static::hasAuthzDirectoryAccess() && static::checkAbility('update');
     }
 
     public static function canDelete(Model $record): bool
     {
-        return static::checkAbility('delete');
+        return static::hasAuthzDirectoryAccess() && static::checkAbility('delete');
+    }
+
+    protected static function hasAuthzDirectoryAccess(): bool
+    {
+        $user = Auth::user();
+
+        if (! $user instanceof Authorizable) {
+            return false;
+        }
+
+        $superAdminRole = config('filament-authz.super_admin_role');
+
+        if (method_exists($user, 'hasRole')) {
+            $registrar = app(PermissionRegistrar::class);
+            $teams = $registrar->teams;
+            $registrar->teams = false;
+
+            try {
+                if ((bool) call_user_func([$user, 'hasRole'], $superAdminRole)) {
+                    return true;
+                }
+            } finally {
+                $registrar->teams = $teams;
+            }
+        }
+
+        return $user->can('role.viewAny')
+            || $user->can('permission.viewAny')
+            || $user->can('settings.manage');
     }
 
     protected static function checkAbility(string $action): bool

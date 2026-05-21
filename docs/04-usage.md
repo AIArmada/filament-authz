@@ -184,7 +184,7 @@ Authz::withScope($project, fn () => $user->can('project.update'));
 Authz::userHasPermissionAcrossScopes($user, 'project.update'); // global or cross-scope
 ```
 
-When `central_app` is enabled, the Role resource includes a scope selector. Leave it empty for a global role.
+When `central_app` is enabled, the Role resource includes a scope selector — leave it empty for a global role. When `central_app` is `false` (default) and `scoped_to_tenant` is `true`, the role assignment form in the user resource is automatically scoped to the current tenant: only roles matching the active team are shown, and submitting a role ID outside that scope throws an `AuthorizationException`.
 
 ## Programmatic Permission Building
 

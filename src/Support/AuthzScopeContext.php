@@ -6,40 +6,55 @@ namespace AIArmada\FilamentAuthz\Support;
 
 final class AuthzScopeContext
 {
-    private static bool $hasOverride = false;
+    private bool $hasOverride = false;
 
-    private static string | int | null $scopeId = null;
+    private string | int | null $scopeId = null;
+
+    private static function instance(): self
+    {
+        return app(self::class);
+    }
 
     public static function resolve(): string | int | null
     {
-        return self::$hasOverride ? self::$scopeId : null;
+        $context = self::instance();
+
+        return $context->hasOverride ? $context->scopeId : null;
+    }
+
+    public static function hasOverride(): bool
+    {
+        return self::instance()->hasOverride;
     }
 
     public static function set(string | int | null $scopeId): void
     {
-        self::$scopeId = $scopeId;
-        self::$hasOverride = true;
+        $context = self::instance();
+        $context->scopeId = $scopeId;
+        $context->hasOverride = true;
     }
 
     public static function clear(): void
     {
-        self::$scopeId = null;
-        self::$hasOverride = false;
+        $context = self::instance();
+        $context->scopeId = null;
+        $context->hasOverride = false;
     }
 
     public static function withScope(string | int | null $scopeId, callable $callback): mixed
     {
-        $previousId = self::$scopeId;
-        $previousHasOverride = self::$hasOverride;
+        $context = self::instance();
+        $previousId = $context->scopeId;
+        $previousHasOverride = $context->hasOverride;
 
-        self::$scopeId = $scopeId;
-        self::$hasOverride = true;
+        $context->scopeId = $scopeId;
+        $context->hasOverride = true;
 
         try {
             return $callback();
         } finally {
-            self::$scopeId = $previousId;
-            self::$hasOverride = $previousHasOverride;
+            $context->scopeId = $previousId;
+            $context->hasOverride = $previousHasOverride;
         }
     }
 }

@@ -30,6 +30,8 @@ class FilamentAuthzPlugin implements Plugin
 {
     use EvaluatesClosures;
 
+    public const PLUGIN_ID = 'aiarmada-filament-authz';
+
     protected ?Panel $panel = null;
 
     protected bool | Closure $registerRoleResource = true;
@@ -121,7 +123,7 @@ class FilamentAuthzPlugin implements Plugin
 
     public function getId(): string
     {
-        return 'aiarmada-filament-authz';
+        return self::PLUGIN_ID;
     }
 
     public function register(Panel $panel): void
@@ -750,7 +752,6 @@ class FilamentAuthzPlugin implements Plugin
         config()->set('filament-authz.role_resource.grid_columns', $this->evaluate($this->gridColumns));
         config()->set('filament-authz.role_resource.checkbox_columns', $this->evaluate($this->checkboxColumns));
         config()->set('filament-authz.role_resource.section_column_span', $this->evaluate($this->sectionColumnSpan));
-        config()->set('filament-authz.role_resource.resource_checkbox_columns', $this->evaluate($this->resourceCheckboxListColumns));
 
         if ($this->roleScopeOptions !== null) {
             config()->set('filament-authz.role_resource.scope_options', $this->roleScopeOptions);
@@ -778,14 +779,6 @@ class FilamentAuthzPlugin implements Plugin
         // Multi-tenancy
         config()->set('filament-authz.scoped_to_tenant', $this->evaluate($this->scopedToTenant));
         config()->set('filament-authz.central_app', $this->evaluate($this->centralApp));
-
-        if ($this->tenantRelationshipName !== null) {
-            config()->set('filament-authz.tenant_relationship_name', $this->evaluate($this->tenantRelationshipName));
-        }
-
-        if ($this->tenantOwnershipRelationship !== null) {
-            config()->set('filament-authz.tenant_ownership_relationship', $this->evaluate($this->tenantOwnershipRelationship));
-        }
 
         if ($this->userRoleScopeMode !== null) {
             config()->set('filament-authz.user_resource.form.role_scope_mode', $this->getUserRoleScopeMode());

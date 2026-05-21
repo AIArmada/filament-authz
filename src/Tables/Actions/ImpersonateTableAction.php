@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AIArmada\FilamentAuthz\Tables\Actions;
 
 use AIArmada\FilamentAuthz\Services\ImpersonateManager;
+use AIArmada\FilamentAuthz\Support\ImpersonationScopeGuard;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Select;
@@ -104,18 +105,36 @@ class ImpersonateTableAction extends Action
             return false;
         }
 
-        if (method_exists($currentUser, 'canImpersonate') && ! $currentUser->canImpersonate()) {
-            return false;
-        }
-
         if (method_exists($record, 'canBeImpersonated') && ! $record->canBeImpersonated()) {
             return false;
         }
 
+        // Scope check must run regardless of canImpersonate() — they are orthogonal.
+        if (! $record instanceof Authenticatable) {
+            return false;
+        }
+
+        if (! ImpersonationScopeGuard::canAccessTarget($record)) {
+            return false;
+        }
+
+        return $this->isActorAuthorizedToImpersonate($currentUser);
+    }
+
+    /**
+     * Verify the acting user has permission to perform impersonation.
+     * Called both from canImpersonate() (visibility) and impersonate() (execution).
+     */
+    private function isActorAuthorizedToImpersonate(Authenticatable $actor): bool
+    {
+        if (method_exists($actor, 'canImpersonate') && $actor->canImpersonate()) {
+            return true;
+        }
+
         $superAdminRole = config('filament-authz.super_admin_role');
 
-        if ($superAdminRole && method_exists($currentUser, 'hasRole')) {
-            return $currentUser->hasRole($superAdminRole);
+        if ($superAdminRole && method_exists($actor, 'hasRole')) {
+            return (bool) $actor->hasRole($superAdminRole);
         }
 
         return false;
@@ -133,6 +152,14 @@ class ImpersonateTableAction extends Action
             return false;
         }
 
+        if (method_exists($record, 'canBeImpersonated') && ! $record->canBeImpersonated()) {
+            return false;
+        }
+
+        if (! ImpersonationScopeGuard::canAccessTarget($record)) {
+            return false;
+        }
+
         $currentUser = Filament::auth()->user();
         $guard = config('filament-authz.impersonate.guard', 'web');
         $manager = app(ImpersonateManager::class);
@@ -141,19 +168,49 @@ class ImpersonateTableAction extends Action
             return false;
         }
 
+        // Re-validate actor authorization in the execution path (defense-in-depth).
+        if (! $this->isActorAuthorizedToImpersonate($currentUser)) {
+            return false;
+        }
+
+        if ($manager->isImpersonating()) {
+            return false;
+        }
+
         $backTo = request()->header('referer') ?? Filament::getUrl();
 
         $success = $manager->take($currentUser, $record, $guard, $backTo);
 
         if ($success) {
-            // Use Livewire's client-side redirect to avoid CSRF 419 errors
-            // This queues a JavaScript redirect that happens AFTER the current request completes
-            $this->redirect($redirectTo, navigate: false);
+            // Whitelist-validate the redirect destination server-side.
+            // The form Select only shows panel paths, but form data can be forged.
+            $sanitizedRedirectTo = $this->sanitizeRedirectPath($redirectTo);
 
-            // Return true to signal action completed - prevents Filament from triggering more Livewire requests
+            $this->redirect($sanitizedRedirectTo, navigate: false);
+
             return true;
         }
 
         return false;
+    }
+
+    /**
+     * Validate that the redirect path is an allowed panel path.
+     * Rejects absolute URLs and any path not matching a registered panel.
+     */
+    private function sanitizeRedirectPath(string $path): string
+    {
+        if ($path === '' || preg_match('/^[a-zA-Z][a-zA-Z0-9+\-.]*:\/\//', $path) === 1 || ! str_starts_with($path, '/') || str_starts_with($path, '//')) {
+            return '/';
+        }
+
+        $normalizedPath = '/' . mb_ltrim($path, '/');
+        $allowedPaths = ['/'];
+
+        foreach (Filament::getPanels() as $panel) {
+            $allowedPaths[] = '/' . mb_ltrim((string) $panel->getPath(), '/');
+        }
+
+        return in_array($normalizedPath, array_unique($allowedPaths), true) ? $normalizedPath : '/';
     }
 }

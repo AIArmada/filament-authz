@@ -79,9 +79,13 @@
             {{ __('filament-authz::filament-authz.impersonate.banner_message', ['name' => $displayName]) }}
         </span>
     </div>
-    <a href="{{ route('filament-authz.impersonate.leave') }}" class="banner-link">
-        <x-heroicon-o-arrow-left-on-rectangle style="width: 1rem; height: 1rem;" />
-        {{ __('filament-authz::filament-authz.impersonate.leave') }}
-    </a>
+    <form method="POST" action="{{ route('filament-authz.impersonate.leave') }}">
+        @csrf
+
+        <button type="submit" class="banner-link">
+            <x-heroicon-o-arrow-left-on-rectangle style="width: 1rem; height: 1rem;" />
+            {{ __('filament-authz::filament-authz.impersonate.leave') }}
+        </button>
+    </form>
 </div>
 @endif

@@ -226,3 +226,10 @@ $authzScope = AuthzScope::query()->firstOrCreate(
    // OwnerContextTeamResolver when using commerce-support + teams
    ```
    For Filament tenancy, register `SyncAuthzTenant` in tenant middleware. For Authz Scopes, use `Authz::withScope()` to set scope explicitly.
+
+## AuthorizationException When Saving User Roles
+
+If you see `One or more selected roles are outside the current tenant scope`, a role ID was submitted that does not belong to the active team. This is a server-side security guard in `UserAuthzForm`.
+
+- Verify the active team context is set before the form saves (check your `SyncAuthzTenant` middleware or `Authz::withScope()` call).
+- If you intentionally manage roles across tenants (e.g., a super-admin panel), set `'central_app' => true` in `config/filament-authz.php` to disable the restriction.

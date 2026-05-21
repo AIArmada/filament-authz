@@ -82,9 +82,10 @@ class ImpersonationBannerMiddleware
             ? $user->getFilamentName()
             : ($user->name ?? $user->email ?? 'User');
 
-        $leaveUrl = route('filament-authz.impersonate.leave');
-        $message = __('filament-authz::filament-authz.impersonate.banner_message', ['name' => $userName]);
-        $leaveText = __('filament-authz::filament-authz.impersonate.leave');
+        $leaveUrl = htmlspecialchars(route('filament-authz.impersonate.leave'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        $csrfToken = htmlspecialchars(csrf_token(), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        $message = htmlspecialchars((string) __('filament-authz::filament-authz.impersonate.banner_message', ['name' => $userName]), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        $leaveText = htmlspecialchars((string) __('filament-authz::filament-authz.impersonate.leave'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
         return <<<HTML
 <div id="impersonation-banner" style="
@@ -110,23 +111,28 @@ class ImpersonationBannerMiddleware
         </svg>
         {$message}
     </span>
-    <a href="{$leaveUrl}" style="
-        background: white;
-        color: #dc2626;
-        padding: 0.25rem 0.75rem;
-        border-radius: 0.375rem;
-        text-decoration: none;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        gap: 0.25rem;
-        transition: background 0.15s;
-    " onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='white'">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 1rem; height: 1rem;">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3" />
-        </svg>
-        {$leaveText}
-    </a>
+    <form method="POST" action="{$leaveUrl}" style="margin: 0;">
+        <input type="hidden" name="_token" value="{$csrfToken}">
+        <button type="submit" style="
+            background: white;
+            color: #dc2626;
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.375rem;
+            border: 0;
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            transition: background 0.15s;
+            cursor: pointer;
+        " onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='white'">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 1rem; height: 1rem;">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3" />
+            </svg>
+            {$leaveText}
+        </button>
+    </form>
 </div>
 <style>
     body { padding-top: 2.5rem !important; }

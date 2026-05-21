@@ -162,15 +162,27 @@ if (is_impersonating()) {
     $admin = get_impersonator();
 }
 
-// Check permissions before showing button
-if (can_impersonate($currentUser, $targetUser)) {
+// Check whether the currently authenticated user can impersonate anyone
+if (can_impersonate()) {
     // Show impersonate button
 }
 
+// Check whether a specific user can be impersonated
 if (can_be_impersonated($targetUser)) {
     // Target is safe to impersonate
 }
 ```
+
+### Function Signatures
+
+```php
+is_impersonating(?string $guard = null): bool
+can_impersonate(?string $guard = null): bool
+can_be_impersonated(Authenticatable $user, ?string $guard = null): bool
+get_impersonator(): ?Authenticatable
+```
+
+`can_impersonate()` checks the currently authenticated user — it does **not** accept a target user argument. To check the target, use `can_be_impersonated($targetUser)`.
 
 ## Blade Directives
 
@@ -184,12 +196,20 @@ Use in Blade templates for conditional rendering:
     </div>
 @endimpersonating
 
-@canImpersonate($user)
+{{-- Check if the current auth user can impersonate anyone --}}
+@canImpersonate
     <button wire:click="impersonate({{ $user->id }})">
         Login as {{ $user->name }}
     </button>
-@endcanImpersonate
+@endCanImpersonate
+
+{{-- Check if a specific user can be impersonated --}}
+@canBeImpersonated($user)
+    <span>This user can be impersonated.</span>
+@endCanBeImpersonated
 ```
+
+`@canImpersonate` takes no argument — it checks the currently authenticated user. `@canBeImpersonated($user)` takes the target `Authenticatable` as its argument.
 
 ## Events
 

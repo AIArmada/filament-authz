@@ -19,7 +19,7 @@ Filament Authz is a comprehensive authorization package for Filament v5, built o
 - **Super Admin Bypass** — Built-in bypass logic for a designated Super Admin role
 - **User Impersonation** — Securely impersonate users with banner notification and panel selection
 - **Fluent Plugin API** — Clean, closure-based API for per-panel configuration
-- **UUID Support** — Built-in UUID primary keys for Role and Permission models
+- **Published Spatie Schema** — Uses your app's published Spatie Permission tables instead of shipping a copied base migration
 - **Laravel Octane Compatible** — Automatic cache clearing between Octane requests
 
 ## Core Concepts
@@ -113,7 +113,7 @@ class SettingsPage extends Page
 - PHP 8.4+
 - Laravel 12+
 - Filament 5.0+
-- Spatie laravel-permission 6.0+
+- Spatie laravel-permission 7.2+
 
 ## Architecture
 
@@ -131,9 +131,26 @@ class SettingsPage extends Page
 
 | Model | Purpose |
 |-------|---------|
-| `Role` | Extends Spatie Role with UUID support and tenant scoping |
-| `Permission` | Extends Spatie Permission with UUID support |
+| `Role` | Extends Spatie Role with tenant scoping helpers |
+| `Permission` | Extends Spatie Permission |
 | `AuthzScope` | Model-backed scope for tenant or domain-specific roles |
+
+## Migration Ownership
+
+`filament-authz` does not own Spatie Permission's base tables. Publish the Spatie migration,
+customize the published file to match your app's key types, and then run it as part of your
+application migrations.
+
+That means:
+
+- keep `roles`, `permissions`, `model_has_roles`, `model_has_permissions`, and `role_has_permissions`
+    sourced from the published Spatie migration
+- let `filament-authz` contribute only authz-specific tables such as `authz_scopes`
+- if you use UUID / ULID user IDs or UUID authz-scope IDs for teams, change the published
+    `model_morph_key` / `team_foreign_key` column types accordingly before migrating
+- if you rely on global roles or global direct permissions while Spatie teams are enabled,
+    make the published team columns nullable in the roles and pivot tables as part of that
+    customization
 
 ### Traits
 

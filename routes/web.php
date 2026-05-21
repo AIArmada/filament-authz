@@ -9,9 +9,9 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['web', 'auth'])
     ->prefix('filament-authz')
     ->group(function (): void {
+        Route::post('impersonate/leave', LeaveImpersonationController::class)
+            ->name('filament-authz.impersonate.leave');
+
         Route::post('impersonate/{userId}', ImpersonateController::class)
             ->name('filament-authz.impersonate');
-
-        Route::get('impersonate/leave', LeaveImpersonationController::class)
-            ->name('filament-authz.impersonate.leave');
     });

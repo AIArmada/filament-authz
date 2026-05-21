@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AIArmada\FilamentAuthz\Actions;
 
 use AIArmada\FilamentAuthz\Services\ImpersonateManager;
+use AIArmada\FilamentAuthz\Support\ImpersonationScopeGuard;
 use Closure;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
@@ -109,18 +110,32 @@ class ImpersonateAction extends Action
             return false;
         }
 
-        if (method_exists($currentUser, 'canImpersonate') && ! $currentUser->canImpersonate()) {
-            return false;
-        }
-
         if (method_exists($targetUser, 'canBeImpersonated') && ! $targetUser->canBeImpersonated()) {
             return false;
         }
 
+        // Scope check is orthogonal to actor authorization — always run it.
+        if (! ImpersonationScopeGuard::canAccessTarget($targetUser)) {
+            return false;
+        }
+
+        return $this->isActorAuthorizedToImpersonate($currentUser);
+    }
+
+    /**
+     * Verify the acting user has permission to perform impersonation.
+     * Called both from canImpersonate() (visibility) and impersonate() (execution).
+     */
+    private function isActorAuthorizedToImpersonate(Authenticatable $actor): bool
+    {
+        if (method_exists($actor, 'canImpersonate') && $actor->canImpersonate()) {
+            return true;
+        }
+
         $superAdminRole = config('filament-authz.super_admin_role');
 
-        if ($superAdminRole && method_exists($currentUser, 'hasRole')) {
-            return $currentUser->hasRole($superAdminRole);
+        if ($superAdminRole && method_exists($actor, 'hasRole')) {
+            return (bool) $actor->hasRole($superAdminRole);
         }
 
         return false;
@@ -138,6 +153,19 @@ class ImpersonateAction extends Action
         }
 
         if (! $targetUser instanceof Authenticatable) {
+            return;
+        }
+
+        if (method_exists($targetUser, 'canBeImpersonated') && ! $targetUser->canBeImpersonated()) {
+            return;
+        }
+
+        if (! ImpersonationScopeGuard::canAccessTarget($targetUser)) {
+            return;
+        }
+
+        // Re-validate actor authorization in the execution path (defense-in-depth).
+        if (! $this->isActorAuthorizedToImpersonate($currentUser)) {
             return;
         }
 

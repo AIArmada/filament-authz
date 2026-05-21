@@ -23,6 +23,7 @@ use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\HtmlString;
 use Spatie\Permission\PermissionRegistrar;
@@ -37,9 +38,10 @@ class PermissionResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        // Permissions are global in Spatie's teams implementation
-        // Only roles are scoped by team_id
-        return parent::getEloquentQuery();
+        // Spatie permissions are intentionally global — they are not scoped to teams.
+        // Only roles carry a team_id; permissions are shared across all tenants.
+        // This is an explicit, greppable opt-out of owner scoping per monorepo contract.
+        return parent::getEloquentQuery()->withoutGlobalScopes();
     }
 
     public static function getModel(): string
@@ -207,11 +209,11 @@ class PermissionResource extends Resource
         }
 
         $roleCount = method_exists($record, 'roles')
-            ? $record->roles()->count()
+            ? static::scopedRolesQuery($record)->count()
             : 0;
 
         $directUserCount = method_exists($record, 'users')
-            ? $record->users()->count()
+            ? static::scopedDirectUsersQuery($record)->count()
             : 0;
 
         return "Assigned to {$roleCount} role(s), and {$directUserCount} user(s) directly.";
@@ -234,12 +236,12 @@ class PermissionResource extends Resource
         }
 
         /** @var Collection<int, Model> $roles */
-        $roles = $record->roles()
+        $roles = static::scopedRolesQuery($record)
             ->orderBy('name')
             ->limit(20)
             ->get($columns);
 
-        $total = $record->roles()->count();
+        $total = static::scopedRolesQuery($record)->count();
         $scopeLabels = static::resolveScopeLabels($roles, $teamsKey, $teamsEnabled);
 
         $items = $roles
@@ -261,11 +263,11 @@ class PermissionResource extends Resource
         }
 
         /** @var Collection<int, Model> $users */
-        $users = $record->users()
+        $users = static::scopedDirectUsersQuery($record)
             ->limit(20)
             ->get();
 
-        $total = $record->users()->count();
+        $total = static::scopedDirectUsersQuery($record)->count();
 
         $items = $users
             ->map(static function (Model $user): string {
@@ -356,5 +358,61 @@ class PermissionResource extends Resource
         }
 
         return "{$name} ({$scopeLabel})";
+    }
+
+    protected static function shouldRestrictToCurrentTeam(): bool
+    {
+        $registrar = app(PermissionRegistrar::class);
+
+        return (bool) $registrar->teams
+            && config('filament-authz.scoped_to_tenant', true)
+            && ! config('filament-authz.central_app', false);
+    }
+
+    protected static function scopedRolesQuery(Model $record): BelongsToMany
+    {
+        /** @var BelongsToMany $query */
+        // @phpstan-ignore-next-line method.notFound
+        $query = $record->roles();
+
+        if (! static::shouldRestrictToCurrentTeam()) {
+            return $query;
+        }
+
+        $registrar = app(PermissionRegistrar::class);
+        $teamsKey = (string) $registrar->teamsKey;
+        $teamId = getPermissionsTeamId();
+        $roleTable = config('permission.table_names.roles', 'roles');
+
+        if (! is_string($roleTable) || $roleTable === '') {
+            $roleTable = 'roles';
+        }
+
+        if ($teamId === null) {
+            return $query->whereNull("{$roleTable}.{$teamsKey}");
+        }
+
+        return $query->where("{$roleTable}.{$teamsKey}", $teamId);
+    }
+
+    protected static function scopedDirectUsersQuery(Model $record): BelongsToMany
+    {
+        /** @var BelongsToMany $query */
+        // @phpstan-ignore-next-line method.notFound
+        $query = $record->users();
+
+        if (! static::shouldRestrictToCurrentTeam()) {
+            return $query;
+        }
+
+        $registrar = app(PermissionRegistrar::class);
+        $teamsKey = (string) $registrar->teamsKey;
+        $teamId = getPermissionsTeamId();
+
+        if ($teamId === null) {
+            return $query->wherePivot($teamsKey, null);
+        }
+
+        return $query->wherePivot($teamsKey, $teamId);
     }
 }

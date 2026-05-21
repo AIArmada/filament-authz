@@ -262,7 +262,7 @@ class RoleResource extends Resource
                 ->searchable(),
         ];
 
-        if (config('filament-authz.authz_scopes.enabled', false)) {
+        if (config('filament-authz.authz_scopes.enabled', false) && config('filament-authz.central_app', false)) {
             $teamsKey = app(PermissionRegistrar::class)->teamsKey;
             $scopeOptions = static::getScopeOptions();
 
@@ -306,7 +306,7 @@ class RoleResource extends Resource
                 ->sortable(),
         ];
 
-        if (config('filament-authz.authz_scopes.enabled', false)) {
+        if (config('filament-authz.authz_scopes.enabled', false) && config('filament-authz.central_app', false)) {
             $columns[] = TextColumn::make('authzScope.label')
                 ->label(__('filament-authz::filament-authz.table.scope'))
                 ->formatStateUsing(fn (?string $state): string => $state ?? __('filament-authz::filament-authz.table.global_scope'))
@@ -431,7 +431,7 @@ class RoleResource extends Resource
             }
 
             /** @var FilamentAuthzPlugin|null */
-            return $panel->getPlugin('filament-authz');
+            return $panel->getPlugin(FilamentAuthzPlugin::PLUGIN_ID);
         } catch (Throwable) {
             return null;
         }
