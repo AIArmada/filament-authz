@@ -58,20 +58,23 @@ trait SyncsRolePermissions
      */
     protected function syncPermissionsToRole(): void
     {
+        /** @var Role $role */
+        $role = $this->record;
+
         if ($this->permissionNames === []) {
-            $this->record->syncPermissions([]);
+            $role->syncPermissions([]);
             app(PermissionRegistrar::class)->forgetCachedPermissions();
 
             return;
         }
 
-        $guardName = $this->record->guard_name;
+        $guardName = $role->guard_name;
 
         $permissions = collect($this->permissionNames)->map(
             fn (string $name) => Permission::findOrCreate($name, $guardName)
         );
 
-        $this->record->syncPermissions($permissions);
+        $role->syncPermissions($permissions);
         app(PermissionRegistrar::class)->forgetCachedPermissions();
     }
 }

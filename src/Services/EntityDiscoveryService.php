@@ -38,7 +38,7 @@ class EntityDiscoveryService
     }
 
     /**
-     * @return Collection<int, array{type: string, class: class-string, permission: string, label: string}>
+     * @return Collection<int, array{type: string, class: class-string<resource>, permission: string, label: string}>
      */
     public function discoverResources(?Panel $panel = null): Collection
     {
@@ -70,7 +70,7 @@ class EntityDiscoveryService
     }
 
     /**
-     * @return Collection<int, array{type: string, class: class-string, permission: string, label: string}>
+     * @return Collection<int, array{type: string, class: class-string<Page>, permission: string, label: string}>
      */
     public function discoverPages(?Panel $panel = null): Collection
     {
@@ -100,7 +100,7 @@ class EntityDiscoveryService
     }
 
     /**
-     * @return Collection<int, array{type: string, class: class-string, permission: string, label: string}>
+     * @return Collection<int, array{type: string, class: class-string<Widget>, permission: string, label: string}>
      */
     public function discoverWidgets(?Panel $panel = null): Collection
     {

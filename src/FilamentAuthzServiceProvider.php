@@ -21,6 +21,7 @@ use AIArmada\FilamentAuthz\Services\WildcardPermissionResolver;
 use AIArmada\FilamentAuthz\Support\AuthzScopeContext;
 use AIArmada\FilamentAuthz\Support\AuthzScopeTeamResolver;
 use AIArmada\FilamentAuthz\Support\OwnerContextTeamResolver;
+use AIArmada\FilamentAuthz\Support\UserRoleChecker;
 use Illuminate\Auth\AuthManager;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
@@ -120,7 +121,7 @@ class FilamentAuthzServiceProvider extends ServiceProvider
                 $registrar->teams = false;
 
                 try {
-                    return $user->hasRole($superAdminRole) ? true : null;
+                    return UserRoleChecker::hasRole($user, $superAdminRole) ? true : null;
                 } finally {
                     $registrar->teams = $teams;
                 }
@@ -248,17 +249,9 @@ class FilamentAuthzServiceProvider extends ServiceProvider
                 $app['request'] ?? null
             );
 
-            if (method_exists($guard, 'setCookieJar')) {
-                $guard->setCookieJar($app['cookie']);
-            }
-
-            if (method_exists($guard, 'setDispatcher')) {
-                $guard->setDispatcher($app['events']);
-            }
-
-            if (method_exists($guard, 'setRequest')) {
-                $guard->setRequest($app->refresh('request', $guard, 'setRequest'));
-            }
+            $guard->setCookieJar($app['cookie']);
+            $guard->setDispatcher($app['events']);
+            $guard->setRequest($app->refresh('request', $guard, 'setRequest'));
 
             if (isset($config['remember'])) {
                 $guard->setRememberDuration($config['remember']);

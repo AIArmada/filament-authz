@@ -131,7 +131,7 @@ class GeneratePoliciesCommand extends Command
     }
 
     /**
-     * @return Collection<int, array<string, mixed>>
+     * @return Collection<int, array{type: string, class: class-string, permissions: array<string, string>, label: string}>
      */
     protected function getTargetResources(Panel $panel): Collection
     {

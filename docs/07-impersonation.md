@@ -192,7 +192,10 @@ Use in Blade templates for conditional rendering:
 @impersonating
     <div class="impersonation-notice">
         You are viewing as {{ auth()->user()->name }}
-        <a href="{{ route('filament.impersonate.leave') }}">Return to admin</a>
+        <form method="POST" action="{{ route('filament-authz.impersonate.leave') }}">
+            @csrf
+            <button type="submit">Return to admin</button>
+        </form>
     </div>
 @endimpersonating
 

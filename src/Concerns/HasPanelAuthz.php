@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AIArmada\FilamentAuthz\Concerns;
 
 use AIArmada\FilamentAuthz\Models\Role;
+use AIArmada\FilamentAuthz\Support\UserRoleChecker;
 use Filament\Panel;
 
 /**
@@ -56,7 +57,7 @@ trait HasPanelAuthz
     {
         $superAdminRole = config('filament-authz.super_admin_role');
 
-        if ($superAdminRole && method_exists($this, 'hasRole') && $this->hasRole($superAdminRole)) {
+        if ($superAdminRole && UserRoleChecker::hasRole($this, $superAdminRole)) {
             return true;
         }
 
@@ -68,6 +69,6 @@ trait HasPanelAuthz
 
         $roleName = $config['name'] ?? 'panel_user';
 
-        return method_exists($this, 'hasRole') && $this->hasRole($roleName);
+        return UserRoleChecker::hasRole($this, $roleName);
     }
 }

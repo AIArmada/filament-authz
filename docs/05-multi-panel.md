@@ -48,14 +48,14 @@ The `SyncAuthzTenant` middleware ensures the authorization context is properly s
 
 ### Manual Registration
 
-If you need to register the middleware manually:
+If you need to register the middleware manually, add it to the panel's tenant middleware:
 
 ```php
 // In your PanelProvider
 $panel
-    ->middleware([
+    ->tenantMiddleware([
         \AIArmada\FilamentAuthz\Middleware\SyncAuthzTenant::class,
-    ]);
+    ], isPersistent: true);
 ```
 
 ### What It Does

@@ -38,7 +38,7 @@ $panel->plugins([
 
         // UI layout
         ->gridColumns(3)                      // Tab grid columns
-        ->checkboxColumns(5)                  // Permissions per row
+        ->checkboxListColumns(5)              // Permissions per row
         ->sectionColumnSpan(1)                // Column span for each section
         ->resourceCheckboxListColumns(2)      // Checkbox columns inside resource sections
         ->resourcesTab(true)                  // Show resources tab
@@ -82,7 +82,7 @@ $panel->plugins([
 | `excludePages()` | `array\|Closure` | `[]` | Pages to exclude from discovery |
 | `excludeWidgets()` | `array\|Closure` | `[]` | Widgets to exclude from discovery |
 | `gridColumns()` | `int\|array\|Closure` | `2` | Tab form grid columns |
-| `checkboxColumns()` | `int\|array\|Closure` | `3` | Checkboxes per row |
+| `checkboxListColumns()` | `int\|array\|Closure` | `3` | Checkboxes per row |
 | `sectionColumnSpan()` | `int\|array\|Closure` | `1` | Column span per section |
 | `resourceCheckboxListColumns()` | `int\|array\|Closure` | `2` | Checkbox list columns inside resource sections |
 | `resourcesTab()` | `bool\|Closure` | `true` | Show resources tab |

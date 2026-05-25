@@ -192,7 +192,7 @@ PHP;
         $result = [];
 
         foreach ($permissions as $permission) {
-            $guard = $permission->guard_name;
+            $guard = (string) $permission->getAttribute('guard_name');
 
             if (! isset($result[$guard])) {
                 $result[$guard] = [];
@@ -214,7 +214,7 @@ PHP;
 
         foreach ($roles as $role) {
             $result[$role->name] = [
-                'guard' => $role->guard_name,
+                'guard' => (string) $role->getAttribute('guard_name'),
                 'permissions' => $role->permissions->pluck('name')->toArray(),
             ];
         }

@@ -16,7 +16,7 @@ A comprehensive Filament v5 authorization package extending Spatie laravel-permi
 ## Requirements
 
 - PHP 8.4+
-- Laravel 12+
+- Laravel 13+
 - Filament 5.0+
 - Spatie laravel-permission 7.2+
 

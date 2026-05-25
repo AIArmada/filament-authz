@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AIArmada\FilamentAuthz;
 
 use AIArmada\FilamentAuthz\Services\ImpersonateManager;
+use AIArmada\FilamentAuthz\Support\UserRoleChecker;
 use Illuminate\Contracts\Auth\Authenticatable;
 
 if (! function_exists('AIArmada\\FilamentAuthz\\is_impersonating')) {
@@ -41,8 +42,8 @@ if (! function_exists('AIArmada\\FilamentAuthz\\can_impersonate')) {
 
         $superAdminRole = config('filament-authz.super_admin_role');
 
-        if ($superAdminRole && method_exists($user, 'hasRole')) {
-            return $user->hasRole($superAdminRole);
+        if ($superAdminRole) {
+            return UserRoleChecker::hasRole($user, $superAdminRole);
         }
 
         return false;

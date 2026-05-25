@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AIArmada\FilamentAuthz\Concerns;
 
 use AIArmada\FilamentAuthz\Facades\Authz;
+use AIArmada\FilamentAuthz\Support\UserRoleChecker;
 use Filament\Facades\Filament;
 
 /**
@@ -45,7 +46,7 @@ trait HasWidgetAuthz
 
         $superAdminRole = config('filament-authz.super_admin_role');
 
-        if ($superAdminRole && method_exists($user, 'hasRole') && $user->hasRole($superAdminRole)) {
+        if ($superAdminRole && UserRoleChecker::hasRole($user, $superAdminRole)) {
             return true;
         }
 

@@ -4,7 +4,52 @@ title: Overview
 
 # Filament Authz
 
-Filament Authz is a comprehensive authorization package for Filament v5, built on top of `spatie/laravel-permission`. It provides an automated, developer-friendly way to manage roles and permissions across multiple panels and multi-tenant environments.
+Filament Authz is the Filament-facing authorization package for Commerce applications. Built on top of `spatie/laravel-permission`, it adds discovery, resources, panel configuration, tenant-aware team resolution, and impersonation tooling for Filament v5.
+
+## Purpose
+
+Use this package when you need authorization management inside Filament panels, especially when the panel should discover permissions from resources, pages, and widgets automatically.
+
+## What this package owns
+
+- The `FilamentAuthzPlugin` fluent API and per-panel overrides
+- Filament resources for roles, permissions, and the optional user resource
+- Permission discovery for Filament resources, pages, and widgets
+- Permission key formatting, wildcard resolution, and sync helpers
+- Authz scope resolution for model-backed permission teams
+- Impersonation routes, middleware, banner UI, and manager services
+- Console commands such as `authz:discover`, `authz:policies`, `authz:super-admin`, and `authz:sync`
+
+## What this package does not own
+
+- Your application's `User` model, authenticatable tables, or user-specific business rules
+- Domain authorization policy logic outside the permission checks it scaffolds or supports
+- Non-Filament authorization UI for your application
+- Tenant ownership semantics themselves when your app uses `commerce-support` owner context
+
+## Related packages
+
+- `spatie/laravel-permission` provides the underlying roles, permissions, and team mechanics
+- `filament/filament` provides the panel, page, widget, and resource surfaces this package discovers
+- `aiarmada/commerce-support` is used when permission teams should follow `OwnerContext` instead of Authz scopes
+
+## Main models services or surfaces
+
+- `FilamentAuthzPlugin` configures panel behavior and resource registration
+- `RoleResource`, `PermissionResource`, and `UserResource` provide the admin UI
+- `Authz` coordinates discovery, permission building, and cache management
+- `EntityDiscoveryService` finds Filament resources, pages, and widgets
+- `PermissionKeyBuilder` and `WildcardPermissionResolver` generate and match permission keys
+- `AuthzScope` models scope-backed teams for roles and permissions
+- `ImpersonateManager` manages impersonation state, routes, and cleanup
+
+## Owner scoping and security notes
+
+- Tenant scoping relies on Spatie teams. When `authz_scopes.enabled` is true, `AuthzScopeTeamResolver` becomes the team resolver.
+- When Authz scopes are disabled but `commerce-support` owner context and Spatie teams are both enabled, the package falls back to `OwnerContextTeamResolver`.
+- `central_app` widens management scope intentionally; when it is `false`, user-role assignment remains constrained to the current team context.
+- The user role form revalidates submitted role IDs on save and throws an `AuthorizationException` for cross-scope submissions.
+- Impersonation routes are registered under `web` + `auth` middleware and the banner middleware is appended to the `web` group when impersonation is enabled.
 
 ## Features
 
@@ -19,7 +64,7 @@ Filament Authz is a comprehensive authorization package for Filament v5, built o
 - **Super Admin Bypass** — Built-in bypass logic for a designated Super Admin role
 - **User Impersonation** — Securely impersonate users with banner notification and panel selection
 - **Fluent Plugin API** — Clean, closure-based API for per-panel configuration
-- **Published Spatie Schema** — Uses your app's published Spatie Permission tables instead of shipping a copied base migration
+- **UUID-First Permission Schema** — Ships UUID-based permission-table migrations plus the `authz_scopes` migration
 - **Laravel Octane Compatible** — Automatic cache clearing between Octane requests
 
 ## Core Concepts
@@ -79,6 +124,23 @@ FilamentAuthzPlugin::make()
     ->tenantOwnershipRelationshipName('owner');
 ```
 
+## Database and migration ownership
+
+`filament-authz` ships UUID-first migrations for:
+
+- `permissions`
+- `roles`
+- `model_has_permissions`
+- `model_has_roles`
+- `role_has_permissions`
+- `authz_scopes`
+
+That means:
+
+- do **not** run Spatie's default auto-increment permission migration on top of the package migration
+- keep your application's `User` model and user table under application ownership
+- align Spatie teams configuration with your active scope key when using tenant or Authz-scope-aware permissions
+
 ## Quick Start
 
 ```php
@@ -111,7 +173,7 @@ class SettingsPage extends Page
 ## Requirements
 
 - PHP 8.4+
-- Laravel 12+
+- Laravel 13+
 - Filament 5.0+
 - Spatie laravel-permission 7.2+
 
@@ -135,23 +197,6 @@ class SettingsPage extends Page
 | `Permission` | Extends Spatie Permission |
 | `AuthzScope` | Model-backed scope for tenant or domain-specific roles |
 
-## Migration Ownership
-
-`filament-authz` does not own Spatie Permission's base tables. Publish the Spatie migration,
-customize the published file to match your app's key types, and then run it as part of your
-application migrations.
-
-That means:
-
-- keep `roles`, `permissions`, `model_has_roles`, `model_has_permissions`, and `role_has_permissions`
-    sourced from the published Spatie migration
-- let `filament-authz` contribute only authz-specific tables such as `authz_scopes`
-- if you use UUID / ULID user IDs or UUID authz-scope IDs for teams, change the published
-    `model_morph_key` / `team_foreign_key` column types accordingly before migrating
-- if you rely on global roles or global direct permissions while Spatie teams are enabled,
-    make the published team columns nullable in the roles and pivot tables as part of that
-    customization
-
 ### Traits
 
 | Trait | Purpose |
@@ -163,3 +208,13 @@ That means:
 | `CanBeImpersonated` | Adds impersonation capability to User models |
 | `SyncsRolePermissions` | Shared permission sync logic for Role pages |
 | `ScopesAuthzTenancy` | Applies tenant scoping to queries |
+
+## Read next
+
+- [Installation](02-installation.md)
+- [Configuration](03-configuration.md)
+- [Usage](04-usage.md)
+- [Multi-Panel](05-multi-panel.md)
+- [CLI Reference](06-cli-reference.md)
+- [Impersonation](07-impersonation.md)
+- [Troubleshooting](99-troubleshooting.md)

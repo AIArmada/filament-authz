@@ -147,7 +147,7 @@ When using multiple panels with different configurations:
 
 ## Octane Compatibility
 
-The package is Laravel Octane compatible. It automatically flushes cached data between requests using the `RequestTerminated` event listener.
+The package is Laravel Octane compatible. It clears permission and discovery caches on Octane `RequestReceived` so each request starts from a fresh authorization cache state.
 
 If you encounter stale data in Octane:
 
@@ -171,12 +171,14 @@ app(PermissionRegistrar::class)->forgetCachedPermissions();
 
 ## Commands Not Running in Production
 
-The following commands are blocked in production by `CommandProhibitor`:
+`filament-authz` ships a `CommandProhibitor` helper. If your application calls `CommandProhibitor::prohibitDestructiveCommands(true)`, these commands are blocked:
 
-- `authz:discover --create` (use seeders instead)
-- `authz:sync` (use seeders/migrations instead)
+- `authz:policies`
+- `authz:seeder`
+- `authz:super-admin`
+- `authz:sync`
 
-To run in production, use the `--force` flag if available, or configure `APP_ENV` appropriately.
+`authz:discover` is not part of that prohibitable set. These commands do not expose a built-in `--force` override, so adjust the application-level prohibition rule instead.
 
 ## Wildcard Permissions Not Matching
 

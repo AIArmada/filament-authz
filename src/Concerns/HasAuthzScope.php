@@ -5,8 +5,14 @@ declare(strict_types=1);
 namespace AIArmada\FilamentAuthz\Concerns;
 
 use AIArmada\FilamentAuthz\Models\AuthzScope;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 
+/**
+ * @mixin Model
+ *
+ * @property-read AuthzScope|null $authzScope
+ */
 trait HasAuthzScope
 {
     public static function bootHasAuthzScope(): void
@@ -24,6 +30,9 @@ trait HasAuthzScope
         });
     }
 
+    /**
+     * @return MorphOne<AuthzScope, $this>
+     */
     public function authzScope(): MorphOne
     {
         return $this->morphOne(AuthzScope::class, 'scopeable');
@@ -31,9 +40,12 @@ trait HasAuthzScope
 
     public function ensureAuthzScope(): AuthzScope
     {
-        return $this->authzScope()->firstOrCreate([], [
+        /** @var AuthzScope $authzScope */
+        $authzScope = $this->authzScope()->firstOrCreate([], [
             'label' => $this->getAuthzScopeLabel(),
         ]);
+
+        return $authzScope;
     }
 
     public function syncAuthzScopeLabel(): void
@@ -41,7 +53,7 @@ trait HasAuthzScope
         $scope = $this->authzScope;
         $label = $this->getAuthzScopeLabel();
 
-        if (! $scope || $label === $scope->label) {
+        if (! $scope instanceof AuthzScope || $label === $scope->label) {
             return;
         }
 

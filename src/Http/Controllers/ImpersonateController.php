@@ -7,6 +7,7 @@ namespace AIArmada\FilamentAuthz\Http\Controllers;
 use AIArmada\FilamentAuthz\Actions\ImpersonateAction;
 use AIArmada\FilamentAuthz\Services\ImpersonateManager;
 use AIArmada\FilamentAuthz\Support\ImpersonationScopeGuard;
+use AIArmada\FilamentAuthz\Support\UserRoleChecker;
 use Filament\Facades\Filament;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
@@ -61,8 +62,8 @@ class ImpersonateController
         } else {
             $superAdminRole = (string) config('filament-authz.super_admin_role', '');
 
-            if ($superAdminRole !== '' && method_exists($currentUser, 'hasRole')) {
-                $isAuthorizedImpersonator = (bool) $currentUser->hasRole($superAdminRole);
+            if ($superAdminRole !== '') {
+                $isAuthorizedImpersonator = UserRoleChecker::hasRole($currentUser, $superAdminRole);
             }
         }
 

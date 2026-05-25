@@ -333,23 +333,16 @@ class ImpersonateManager
      */
     private function updatePasswordHashInSession(Authenticatable $user, string $guardName): void
     {
-        if (! method_exists($user, 'getAuthPassword')) {
-            return;
-        }
-
         $passwordHash = $user->getAuthPassword();
 
         if (empty($passwordHash)) {
             return;
         }
 
+        /** @var SessionGuard $guard */
         $guard = $this->app['auth']->guard();
 
-        if (method_exists($guard, 'hashPasswordForCookie')) {
-            $hashedPassword = $guard->hashPasswordForCookie($passwordHash);
-        } else {
-            $hashedPassword = $passwordHash;
-        }
+        $hashedPassword = $guard->hashPasswordForCookie($passwordHash);
 
         session()->put('password_hash_' . $guardName, $hashedPassword);
     }

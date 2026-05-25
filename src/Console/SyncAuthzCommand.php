@@ -46,6 +46,7 @@ class SyncAuthzCommand extends Command
 
         foreach ($roles as $roleName => $perms) {
             foreach ($guards as $guard) {
+                /** @var Role $role */
                 $role = Role::findOrCreate($roleName, $guard);
                 $role->syncPermissions($perms);
                 $roleCount++;

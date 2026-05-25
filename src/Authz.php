@@ -64,7 +64,15 @@ class Authz
     /**
      * Get all discovered resources for a panel.
      *
-     * @return Collection<int, array{type: string, class: class-string, permissions: array<string, string>, label: string}>
+     * @return Collection<int, array{
+     *     type: string,
+     *     class: class-string<resource>,
+     *     subject: string,
+     *     permissions: array<string, string>,
+     *     actions: array<string, string>,
+     *     label: string,
+     *     model: class-string<Model>|null
+     * }>
      */
     public function getResources(?Panel $panel = null): Collection
     {
@@ -75,13 +83,17 @@ class Authz
             $this->discoveryCache[$key . '_resources'] = $this->transformResources($panel);
         }
 
-        return $this->discoveryCache[$key . '_resources'];
+        /** @var Collection<int, array{type: string, class: class-string<resource>, subject: string, permissions: array<string, string>, actions: array<string, string>, label: string, model: class-string<Model>|null}> $resources */
+        $resources = $this->discoveryCache[$key . '_resources'];
+
+        // @phpstan-ignore return.type
+        return $resources;
     }
 
     /**
      * Get all discovered pages for a panel.
      *
-     * @return Collection<int, array{type: string, class: class-string, permission: string, label: string}>
+     * @return Collection<int, array{type: string, class: class-string<Page>, permission: string, label: string}>
      */
     public function getPages(?Panel $panel = null): Collection
     {
@@ -92,13 +104,16 @@ class Authz
             $this->discoveryCache[$key . '_pages'] = $this->transformPages($panel);
         }
 
-        return $this->discoveryCache[$key . '_pages'];
+        /** @var Collection<int, array{type: string, class: class-string<Page>, permission: string, label: string}> $pages */
+        $pages = $this->discoveryCache[$key . '_pages'];
+
+        return $pages;
     }
 
     /**
      * Get all discovered widgets for a panel.
      *
-     * @return Collection<int, array{type: string, class: class-string, permission: string, label: string}>
+     * @return Collection<int, array{type: string, class: class-string<Widget>, permission: string, label: string}>
      */
     public function getWidgets(?Panel $panel = null): Collection
     {
@@ -109,7 +124,10 @@ class Authz
             $this->discoveryCache[$key . '_widgets'] = $this->transformWidgets($panel);
         }
 
-        return $this->discoveryCache[$key . '_widgets'];
+        /** @var Collection<int, array{type: string, class: class-string<Widget>, permission: string, label: string}> $widgets */
+        $widgets = $this->discoveryCache[$key . '_widgets'];
+
+        return $widgets;
     }
 
     /**
@@ -296,7 +314,15 @@ class Authz
     /**
      * Transform resources into permission structure.
      *
-     * @return Collection<int, array{type: string, class: class-string, permissions: array<string, string>, label: string}>
+     * @return Collection<int, array{
+     *     type: string,
+     *     class: class-string<resource>,
+     *     subject: string,
+     *     permissions: array<string, string>,
+     *     actions: array<string, string>,
+     *     label: string,
+     *     model: class-string<Model>|null
+     * }>
      */
     protected function transformResources(?Panel $panel): Collection
     {
@@ -306,9 +332,10 @@ class Authz
 
         $excluded = (array) config('filament-authz.resources.exclude', []);
 
-        return collect($panel->getResources())
+        $resources = collect($panel->getResources())
             ->filter(fn (string $resource): bool => ! in_array($resource, $excluded, true))
             ->map(function (string $resource): array {
+                /** @var class-string<resource> $resource */
                 $subject = $this->getResourceSubject($resource);
                 $label = $this->getResourceLabel($resource);
                 $actions = $this->getResourceActions($resource);
@@ -332,12 +359,15 @@ class Authz
                 ];
             })
             ->values();
+
+        // @phpstan-ignore-next-line Collection covariance false positive with exact array shape.
+        return $resources;
     }
 
     /**
      * Transform pages into permission structure.
      *
-     * @return Collection<int, array{type: string, class: class-string, permission: string, label: string}>
+     * @return Collection<int, array{type: string, class: class-string<Page>, permission: string, label: string}>
      */
     protected function transformPages(?Panel $panel): Collection
     {
@@ -351,6 +381,7 @@ class Authz
         return collect($panel->getPages())
             ->filter(fn (string $page): bool => ! in_array($page, $excluded, true))
             ->map(function (string $page) use ($prefix): array {
+                /** @var class-string<Page> $page */
                 $subject = str(class_basename($page))->toString();
                 $permission = $this->buildPermissionKey($prefix, $subject);
 
@@ -367,7 +398,7 @@ class Authz
     /**
      * Transform widgets into permission structure.
      *
-     * @return Collection<int, array{type: string, class: class-string, permission: string, label: string}>
+     * @return Collection<int, array{type: string, class: class-string<Widget>, permission: string, label: string}>
      */
     protected function transformWidgets(?Panel $panel): Collection
     {
