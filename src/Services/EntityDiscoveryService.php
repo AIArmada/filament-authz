@@ -64,7 +64,7 @@ class EntityDiscoveryService
                         'type' => 'resource',
                         'class' => $resource,
                         'permission' => $this->keyBuilder->build($subject, $action),
-                        'label' => $label.' - '.$this->getActionLabel($action),
+                        'label' => $label . ' - ' . $this->getActionLabel($action),
                     ])
                     ->all();
             })
@@ -209,7 +209,7 @@ class EntityDiscoveryService
     }
 
     /**
-     * @return Collection<int, array{type: string, class: class-string, permission: string, label: string}>
+     * @return Collection<int, array{type: string, class: class-string<Panel>, permission: string, label: string}>
      */
     public function discoverPanels(): Collection
     {

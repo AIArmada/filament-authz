@@ -30,7 +30,7 @@ trait HasPanelAuthz
             return true;
         }
 
-        $panelPermission = 'panel.'.$panel->getId();
+        $panelPermission = 'panel.' . $panel->getId();
 
         return $this->can($panelPermission);
     }

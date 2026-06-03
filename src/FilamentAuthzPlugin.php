@@ -34,84 +34,84 @@ class FilamentAuthzPlugin implements Plugin
 
     protected ?Panel $panel = null;
 
-    protected bool|Closure $registerRoleResource = true;
+    protected bool | Closure $registerRoleResource = true;
 
-    protected bool|Closure $registerPermissionResource = true;
+    protected bool | Closure $registerPermissionResource = true;
 
-    protected string|Closure|null $userRoleScopeMode = null;
+    protected string | Closure | null $userRoleScopeMode = null;
 
     /** @var array<string, string> | Closure | null */
-    protected array|Closure|null $roleScopeOptions = null;
+    protected array | Closure | null $roleScopeOptions = null;
 
-    protected string|Closure|null $navigationGroup = null;
+    protected string | Closure | null $navigationGroup = null;
 
-    protected string|Closure|null $navigationIcon = null;
+    protected string | Closure | null $navigationIcon = null;
 
-    protected string|Closure|null $activeNavigationIcon = null;
+    protected string | Closure | null $activeNavigationIcon = null;
 
-    protected string|Closure|null $navigationLabel = null;
+    protected string | Closure | null $navigationLabel = null;
 
-    protected int|Closure|null $navigationSort = null;
+    protected int | Closure | null $navigationSort = null;
 
-    protected bool|Closure $registerNavigation = true;
+    protected bool | Closure $registerNavigation = true;
 
-    protected string|Closure|null $navigationBadge = null;
+    protected string | Closure | null $navigationBadge = null;
 
-    protected string|array|Closure|null $navigationBadgeColor = null;
+    protected string | array | Closure | null $navigationBadgeColor = null;
 
-    protected string|Closure|null $navigationParentItem = null;
+    protected string | Closure | null $navigationParentItem = null;
 
-    protected string|Closure|null $cluster = null;
-
-    /** @var list<class-string> | Closure | null */
-    protected array|Closure|null $excludeResources = null;
+    protected string | Closure | null $cluster = null;
 
     /** @var list<class-string> | Closure | null */
-    protected array|Closure|null $excludePages = null;
+    protected array | Closure | null $excludeResources = null;
 
     /** @var list<class-string> | Closure | null */
-    protected array|Closure|null $excludeWidgets = null;
+    protected array | Closure | null $excludePages = null;
+
+    /** @var list<class-string> | Closure | null */
+    protected array | Closure | null $excludeWidgets = null;
 
     /** @var list<string> | Closure | null */
-    protected array|Closure|null $excludePanels = null;
+    protected array | Closure | null $excludePanels = null;
 
     /** @var array<string, int> | int | Closure */
-    protected array|int|Closure $gridColumns = 2;
+    protected array | int | Closure $gridColumns = 2;
 
     /** @var array<string, int> | int | Closure */
-    protected array|int|Closure $checkboxColumns = 3;
+    protected array | int | Closure $checkboxColumns = 3;
 
     /** @var array<string, int> | int | Closure */
-    protected array|int|Closure $sectionColumnSpan = 1;
+    protected array | int | Closure $sectionColumnSpan = 1;
 
     /** @var array<string, int> | int | Closure */
-    protected array|int|Closure $resourceCheckboxListColumns = 2;
+    protected array | int | Closure $resourceCheckboxListColumns = 2;
 
-    protected bool|Closure $resourcesTab = true;
+    protected bool | Closure $resourcesTab = true;
 
-    protected bool|Closure $pagesTab = true;
+    protected bool | Closure $pagesTab = true;
 
-    protected bool|Closure $widgetsTab = true;
+    protected bool | Closure $widgetsTab = true;
 
-    protected bool|Closure $customPermissionsTab = true;
+    protected bool | Closure $customPermissionsTab = true;
 
-    protected bool|Closure $panelsTab = true;
+    protected bool | Closure $panelsTab = true;
 
-    protected bool|Closure $simpleResourcePermissionView = false;
+    protected bool | Closure $simpleResourcePermissionView = false;
 
-    protected bool|Closure $localizePermissionLabels = false;
+    protected bool | Closure $localizePermissionLabels = false;
 
-    protected string|Closure|null $permissionCase = null;
+    protected string | Closure | null $permissionCase = null;
 
-    protected string|Closure|null $permissionSeparator = null;
+    protected string | Closure | null $permissionSeparator = null;
 
-    protected bool|Closure $scopedToTenant = true;
+    protected bool | Closure $scopedToTenant = true;
 
-    protected bool|Closure $centralApp = false;
+    protected bool | Closure $centralApp = false;
 
-    protected string|Closure|null $tenantOwnershipRelationship = null;
+    protected string | Closure | null $tenantOwnershipRelationship = null;
 
-    protected string|Closure|null $tenantRelationshipName = null;
+    protected string | Closure | null $tenantRelationshipName = null;
 
     public static function make(): static
     {
@@ -179,14 +179,14 @@ class FilamentAuthzPlugin implements Plugin
     // Resource Registration
     // ─────────────────────────────────────────────────────────────────────────
 
-    public function roleResource(bool|Closure $condition = true): static
+    public function roleResource(bool | Closure $condition = true): static
     {
         $this->registerRoleResource = $condition;
 
         return $this;
     }
 
-    public function permissionResource(bool|Closure $condition = true): static
+    public function permissionResource(bool | Closure $condition = true): static
     {
         $this->registerPermissionResource = $condition;
 
@@ -197,49 +197,49 @@ class FilamentAuthzPlugin implements Plugin
     // Navigation
     // ─────────────────────────────────────────────────────────────────────────
 
-    public function navigationGroup(string|Closure|null $group): static
+    public function navigationGroup(string | Closure | null $group): static
     {
         $this->navigationGroup = $group;
 
         return $this;
     }
 
-    public function navigationIcon(string|Closure|null $icon): static
+    public function navigationIcon(string | Closure | null $icon): static
     {
         $this->navigationIcon = $icon;
 
         return $this;
     }
 
-    public function activeNavigationIcon(string|Closure|null $icon): static
+    public function activeNavigationIcon(string | Closure | null $icon): static
     {
         $this->activeNavigationIcon = $icon;
 
         return $this;
     }
 
-    public function navigationLabel(string|Closure|null $label): static
+    public function navigationLabel(string | Closure | null $label): static
     {
         $this->navigationLabel = $label;
 
         return $this;
     }
 
-    public function navigationSort(int|Closure|null $sort): static
+    public function navigationSort(int | Closure | null $sort): static
     {
         $this->navigationSort = $sort;
 
         return $this;
     }
 
-    public function registerNavigation(bool|Closure $condition = true): static
+    public function registerNavigation(bool | Closure $condition = true): static
     {
         $this->registerNavigation = $condition;
 
         return $this;
     }
 
-    public function navigationBadge(string|Closure|null $badge): static
+    public function navigationBadge(string | Closure | null $badge): static
     {
         $this->navigationBadge = $badge;
 
@@ -249,14 +249,14 @@ class FilamentAuthzPlugin implements Plugin
     /**
      * @param  string | array<string> | Closure | null  $color
      */
-    public function navigationBadgeColor(string|array|Closure|null $color): static
+    public function navigationBadgeColor(string | array | Closure | null $color): static
     {
         $this->navigationBadgeColor = $color;
 
         return $this;
     }
 
-    public function navigationParentItem(string|Closure|null $parentItem): static
+    public function navigationParentItem(string | Closure | null $parentItem): static
     {
         $this->navigationParentItem = $parentItem;
 
@@ -266,7 +266,7 @@ class FilamentAuthzPlugin implements Plugin
     /**
      * @param  class-string | Closure | null  $cluster
      */
-    public function cluster(string|Closure|null $cluster): static
+    public function cluster(string | Closure | null $cluster): static
     {
         $this->cluster = $cluster;
 
@@ -280,7 +280,7 @@ class FilamentAuthzPlugin implements Plugin
     /**
      * @param  list<class-string> | Closure  $resources
      */
-    public function excludeResources(array|Closure $resources): static
+    public function excludeResources(array | Closure $resources): static
     {
         $this->excludeResources = $resources;
 
@@ -290,7 +290,7 @@ class FilamentAuthzPlugin implements Plugin
     /**
      * @param  list<class-string> | Closure  $pages
      */
-    public function excludePages(array|Closure $pages): static
+    public function excludePages(array | Closure $pages): static
     {
         $this->excludePages = $pages;
 
@@ -300,7 +300,7 @@ class FilamentAuthzPlugin implements Plugin
     /**
      * @param  list<class-string> | Closure  $widgets
      */
-    public function excludeWidgets(array|Closure $widgets): static
+    public function excludeWidgets(array | Closure $widgets): static
     {
         $this->excludeWidgets = $widgets;
 
@@ -310,7 +310,7 @@ class FilamentAuthzPlugin implements Plugin
     /**
      * @param  list<string> | Closure  $panels
      */
-    public function excludePanels(array|Closure $panels): static
+    public function excludePanels(array | Closure $panels): static
     {
         $this->excludePanels = $panels;
 
@@ -324,7 +324,7 @@ class FilamentAuthzPlugin implements Plugin
     /**
      * @param  array<string, int> | int | Closure  $columns
      */
-    public function gridColumns(array|int|Closure $columns): static
+    public function gridColumns(array | int | Closure $columns): static
     {
         $this->gridColumns = $columns;
 
@@ -334,7 +334,7 @@ class FilamentAuthzPlugin implements Plugin
     /**
      * @param  array<string, int> | int | Closure  $columns
      */
-    public function checkboxListColumns(array|int|Closure $columns): static
+    public function checkboxListColumns(array | int | Closure $columns): static
     {
         $this->checkboxColumns = $columns;
 
@@ -344,7 +344,7 @@ class FilamentAuthzPlugin implements Plugin
     /**
      * @param  array<string, int> | int | Closure  $span
      */
-    public function sectionColumnSpan(array|int|Closure $span): static
+    public function sectionColumnSpan(array | int | Closure $span): static
     {
         $this->sectionColumnSpan = $span;
 
@@ -354,42 +354,42 @@ class FilamentAuthzPlugin implements Plugin
     /**
      * @param  array<string, int> | int | Closure  $columns
      */
-    public function resourceCheckboxListColumns(array|int|Closure $columns): static
+    public function resourceCheckboxListColumns(array | int | Closure $columns): static
     {
         $this->resourceCheckboxListColumns = $columns;
 
         return $this;
     }
 
-    public function resourcesTab(bool|Closure $condition = true): static
+    public function resourcesTab(bool | Closure $condition = true): static
     {
         $this->resourcesTab = $condition;
 
         return $this;
     }
 
-    public function pagesTab(bool|Closure $condition = true): static
+    public function pagesTab(bool | Closure $condition = true): static
     {
         $this->pagesTab = $condition;
 
         return $this;
     }
 
-    public function widgetsTab(bool|Closure $condition = true): static
+    public function widgetsTab(bool | Closure $condition = true): static
     {
         $this->widgetsTab = $condition;
 
         return $this;
     }
 
-    public function customPermissionsTab(bool|Closure $condition = true): static
+    public function customPermissionsTab(bool | Closure $condition = true): static
     {
         $this->customPermissionsTab = $condition;
 
         return $this;
     }
 
-    public function panelsTab(bool|Closure $condition = true): static
+    public function panelsTab(bool | Closure $condition = true): static
     {
         $this->panelsTab = $condition;
 
@@ -399,7 +399,7 @@ class FilamentAuthzPlugin implements Plugin
     /**
      * Enable simple flat view for resource permissions instead of grouped sections.
      */
-    public function simpleResourcePermissionView(bool|Closure $condition = true): static
+    public function simpleResourcePermissionView(bool | Closure $condition = true): static
     {
         $this->simpleResourcePermissionView = $condition;
 
@@ -409,7 +409,7 @@ class FilamentAuthzPlugin implements Plugin
     /**
      * Enable localized permission labels based on configured translations.
      */
-    public function localizePermissionLabels(bool|Closure $condition = true): static
+    public function localizePermissionLabels(bool | Closure $condition = true): static
     {
         $this->localizePermissionLabels = $condition;
 
@@ -421,7 +421,7 @@ class FilamentAuthzPlugin implements Plugin
      *
      * @param  'all'|'global_only'|'scoped_only' | Closure  $mode
      */
-    public function userRoleScopeMode(string|Closure $mode): static
+    public function userRoleScopeMode(string | Closure $mode): static
     {
         $this->userRoleScopeMode = $mode;
 
@@ -433,7 +433,7 @@ class FilamentAuthzPlugin implements Plugin
      *
      * @param  array<string, string> | Closure | null  $options
      */
-    public function roleScopeOptionsUsing(array|Closure|null $options): static
+    public function roleScopeOptionsUsing(array | Closure | null $options): static
     {
         $this->roleScopeOptions = $options;
 
@@ -449,14 +449,14 @@ class FilamentAuthzPlugin implements Plugin
      *
      * @param  'snake'|'kebab'|'camel'|'pascal'|'upper_snake'|'lower' | Closure  $case
      */
-    public function permissionCase(string|Closure $case): static
+    public function permissionCase(string | Closure $case): static
     {
         $this->permissionCase = $case;
 
         return $this;
     }
 
-    public function permissionSeparator(string|Closure $separator): static
+    public function permissionSeparator(string | Closure $separator): static
     {
         $this->permissionSeparator = $separator;
 
@@ -470,7 +470,7 @@ class FilamentAuthzPlugin implements Plugin
     /**
      * Scope roles/permissions to the current tenant (team).
      */
-    public function scopeToTenant(bool|Closure $condition = true): static
+    public function scopeToTenant(bool | Closure $condition = true): static
     {
         $this->scopedToTenant = $condition;
 
@@ -483,7 +483,7 @@ class FilamentAuthzPlugin implements Plugin
      * In central app mode, the RoleResource shows a team selector
      * so admins can manage roles across all tenants from a single panel.
      */
-    public function centralApp(bool|Closure $condition = true): static
+    public function centralApp(bool | Closure $condition = true): static
     {
         $this->centralApp = $condition;
 
@@ -493,7 +493,7 @@ class FilamentAuthzPlugin implements Plugin
     /**
      * Set the tenant relationship name on the user model.
      */
-    public function tenantRelationshipName(string|Closure|null $name): static
+    public function tenantRelationshipName(string | Closure | null $name): static
     {
         $this->tenantRelationshipName = $name;
 
@@ -503,7 +503,7 @@ class FilamentAuthzPlugin implements Plugin
     /**
      * Set the tenant ownership relationship name on the role model.
      */
-    public function tenantOwnershipRelationshipName(string|Closure|null $name): static
+    public function tenantOwnershipRelationshipName(string | Closure | null $name): static
     {
         $this->tenantOwnershipRelationship = $name;
 
@@ -581,7 +581,7 @@ class FilamentAuthzPlugin implements Plugin
     /**
      * @return string | array<string> | null
      */
-    public function getNavigationBadgeColor(): string|array|null
+    public function getNavigationBadgeColor(): string | array | null
     {
         return $this->evaluate($this->navigationBadgeColor);
     }
@@ -602,7 +602,7 @@ class FilamentAuthzPlugin implements Plugin
     /**
      * @return array<string, int> | int
      */
-    public function getGridColumns(): array|int
+    public function getGridColumns(): array | int
     {
         return $this->evaluate($this->gridColumns);
     }
@@ -610,7 +610,7 @@ class FilamentAuthzPlugin implements Plugin
     /**
      * @return array<string, int> | int
      */
-    public function getCheckboxListColumns(): array|int
+    public function getCheckboxListColumns(): array | int
     {
         return $this->evaluate($this->checkboxColumns);
     }
@@ -618,7 +618,7 @@ class FilamentAuthzPlugin implements Plugin
     /**
      * @return array<string, int> | int
      */
-    public function getSectionColumnSpan(): array|int
+    public function getSectionColumnSpan(): array | int
     {
         return $this->evaluate($this->sectionColumnSpan);
     }
@@ -626,7 +626,7 @@ class FilamentAuthzPlugin implements Plugin
     /**
      * @return array<string, int> | int
      */
-    public function getResourceCheckboxListColumns(): array|int
+    public function getResourceCheckboxListColumns(): array | int
     {
         return $this->evaluate($this->resourceCheckboxListColumns);
     }

@@ -169,7 +169,7 @@ trait HasAuthzFormComponents
             ?? config('filament-authz.role_resource.section_column_span', 1);
 
         $lowerLabel = Str::lower($displayLabel);
-        $safeKey = 'permissions_resource_'.md5($resource['class']);
+        $safeKey = 'permissions_resource_' . md5($resource['class']);
 
         return Section::make($displayLabel)
             ->icon('heroicon-o-rectangle-stack')
@@ -234,7 +234,7 @@ trait HasAuthzFormComponents
 
         foreach ($grouped as $packageName => $pages) {
             $searchTerms = $pages->pluck('label')->map(fn (string $l): string => Str::lower($l))->implode('|');
-            $safeKey = 'permissions_pages_'.md5($packageName);
+            $safeKey = 'permissions_pages_' . md5($packageName);
 
             $sections[] = Section::make($packageName)
                 ->description(trans_choice('filament-authz::filament-authz.section.pages_count', $pages->count(), ['count' => $pages->count()]))
@@ -307,7 +307,7 @@ trait HasAuthzFormComponents
 
         foreach ($grouped as $packageName => $widgets) {
             $searchTerms = $widgets->pluck('label')->map(fn (string $l): string => Str::lower($l))->implode('|');
-            $safeKey = 'permissions_widgets_'.md5($packageName);
+            $safeKey = 'permissions_widgets_' . md5($packageName);
 
             $sections[] = Section::make($packageName)
                 ->description(trans_choice('filament-authz::filament-authz.section.widgets_count', $widgets->count(), ['count' => $widgets->count()]))
@@ -536,7 +536,7 @@ trait HasAuthzFormComponents
         $localized = [];
 
         foreach ($permissions as $key => $label) {
-            $translationKey = 'filament-authz::filament-authz.permissions.'.str_replace(['_', '.'], '_', $key);
+            $translationKey = 'filament-authz::filament-authz.permissions.' . str_replace(['_', '.'], '_', $key);
 
             if (trans()->has($translationKey)) {
                 $localized[$key] = __($translationKey);

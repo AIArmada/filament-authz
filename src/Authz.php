@@ -29,7 +29,7 @@ class Authz
 {
     protected ?Closure $customPermissionKeyBuilder = null;
 
-    /** @var array<string, Collection<int, array<string, mixed>>> */
+    /** @var array<string, Collection<int, mixed>> */
     protected array $discoveryCache = [];
 
     /** @var array<string, array<string, string>> */
@@ -80,12 +80,12 @@ class Authz
         $panel ??= Filament::getCurrentPanel();
         $key = $panel?->getId() ?? 'default';
 
-        if (! isset($this->discoveryCache[$key.'_resources'])) {
-            $this->discoveryCache[$key.'_resources'] = $this->transformResources($panel);
+        if (! isset($this->discoveryCache[$key . '_resources'])) {
+            $this->discoveryCache[$key . '_resources'] = $this->transformResources($panel);
         }
 
         /** @var Collection<int, array{type: string, class: class-string<resource>, subject: string, permissions: array<string, string>, actions: array<string, string>, label: string, model: class-string<Model>|null}> $resources */
-        $resources = $this->discoveryCache[$key.'_resources'];
+        $resources = $this->discoveryCache[$key . '_resources'];
 
         // @phpstan-ignore return.type
         return $resources;
@@ -101,12 +101,12 @@ class Authz
         $panel ??= Filament::getCurrentPanel();
         $key = $panel?->getId() ?? 'default';
 
-        if (! isset($this->discoveryCache[$key.'_pages'])) {
-            $this->discoveryCache[$key.'_pages'] = $this->transformPages($panel);
+        if (! isset($this->discoveryCache[$key . '_pages'])) {
+            $this->discoveryCache[$key . '_pages'] = $this->transformPages($panel);
         }
 
         /** @var Collection<int, array{type: string, class: class-string<Page>, permission: string, label: string}> $pages */
-        $pages = $this->discoveryCache[$key.'_pages'];
+        $pages = $this->discoveryCache[$key . '_pages'];
 
         return $pages;
     }
@@ -121,12 +121,12 @@ class Authz
         $panel ??= Filament::getCurrentPanel();
         $key = $panel?->getId() ?? 'default';
 
-        if (! isset($this->discoveryCache[$key.'_widgets'])) {
-            $this->discoveryCache[$key.'_widgets'] = $this->transformWidgets($panel);
+        if (! isset($this->discoveryCache[$key . '_widgets'])) {
+            $this->discoveryCache[$key . '_widgets'] = $this->transformWidgets($panel);
         }
 
         /** @var Collection<int, array{type: string, class: class-string<Widget>, permission: string, label: string}> $widgets */
-        $widgets = $this->discoveryCache[$key.'_widgets'];
+        $widgets = $this->discoveryCache[$key . '_widgets'];
 
         return $widgets;
     }
@@ -203,7 +203,7 @@ class Authz
      */
     public function getPagePermission(string $pageClass, ?Panel $panel = null): ?string
     {
-        $cacheKey = $pageClass.'_'.($panel?->getId() ?? 'default');
+        $cacheKey = $pageClass . '_' . ($panel?->getId() ?? 'default');
 
         if (isset($this->permissionCache['page'][$cacheKey])) {
             return $this->permissionCache['page'][$cacheKey];
@@ -224,7 +224,7 @@ class Authz
      */
     public function getWidgetPermission(string $widgetClass, ?Panel $panel = null): ?string
     {
-        $cacheKey = $widgetClass.'_'.($panel?->getId() ?? 'default');
+        $cacheKey = $widgetClass . '_' . ($panel?->getId() ?? 'default');
 
         if (isset($this->permissionCache['widget'][$cacheKey])) {
             return $this->permissionCache['widget'][$cacheKey];
@@ -254,7 +254,7 @@ class Authz
     /**
      * Resolve a scopeable model or scope to an authz scope ID.
      */
-    public function resolveScopeId(mixed $scope): string|int|null
+    public function resolveScopeId(mixed $scope): string | int | null
     {
         return AuthzScopeResolver::resolveId($scope);
     }
