@@ -35,6 +35,7 @@ $panel->plugins([
         ->excludeResources([UserResource::class])
         ->excludePages([Dashboard::class])
         ->excludeWidgets([AccountWidget::class])
+        ->excludePanels(['legacy'])           // Panels IDs to exclude from discovery
 
         // UI layout
         ->gridColumns(3)                      // Tab grid columns
@@ -44,6 +45,7 @@ $panel->plugins([
         ->resourcesTab(true)                  // Show resources tab
         ->pagesTab(true)                      // Show pages tab
         ->widgetsTab(true)                    // Show widgets tab
+        ->panelsTab(true)                     // Show panels tab
         ->customPermissionsTab(true)          // Show custom permissions tab
         ->simpleResourcePermissionView(false) // Flat list instead of grouped view
         ->localizePermissionLabels(false)     // Use lang file for permission labels
@@ -81,6 +83,7 @@ $panel->plugins([
 | `excludeResources()` | `array\|Closure` | `[]` | Resources to exclude from discovery |
 | `excludePages()` | `array\|Closure` | `[]` | Pages to exclude from discovery |
 | `excludeWidgets()` | `array\|Closure` | `[]` | Widgets to exclude from discovery |
+| `excludePanels()` | `array\|Closure` | `[]` | Panel IDs to exclude from discovery |
 | `gridColumns()` | `int\|array\|Closure` | `2` | Tab form grid columns |
 | `checkboxListColumns()` | `int\|array\|Closure` | `3` | Checkboxes per row |
 | `sectionColumnSpan()` | `int\|array\|Closure` | `1` | Column span per section |
@@ -88,6 +91,7 @@ $panel->plugins([
 | `resourcesTab()` | `bool\|Closure` | `true` | Show resources tab |
 | `pagesTab()` | `bool\|Closure` | `true` | Show pages tab |
 | `widgetsTab()` | `bool\|Closure` | `true` | Show widgets tab |
+| `panelsTab()` | `bool\|Closure` | `true` | Show panels tab |
 | `customPermissionsTab()` | `bool\|Closure` | `true` | Show custom permissions tab |
 | `simpleResourcePermissionView()` | `bool\|Closure` | `false` | Flat list instead of grouped view |
 | `localizePermissionLabels()` | `bool\|Closure` | `false` | Use lang files for permission labels |
@@ -122,17 +126,6 @@ Role name that bypasses **all** permission checks via `Gate::before`.
 
 ```php
 'super_admin_role' => 'super_admin',
-```
-
-### Panel User Role
-
-Optional role automatically assigned to new users for basic panel access.
-
-```php
-'panel_user' => [
-    'enabled' => false,
-    'name' => 'panel_user',
-],
 ```
 
 ### Wildcard Permissions
@@ -218,6 +211,17 @@ Configure how resources are discovered and what actions generate permissions.
 ],
 ```
 
+### Panel Discovery
+
+Panels registered with Filament are auto-discovered. Each panel generates a permission (`panel.{panelId}`) surfaced in the "Panels" tab of the role editor. Users gain access to a panel when their role includes the corresponding panel permission.
+
+```php
+'panels' => [
+    'prefix' => 'panel',   // Permission key prefix
+    'exclude' => [],        // Panel IDs to exclude (e.g. ['legacy'])
+],
+```
+
 ### Custom Permissions
 
 Additional permissions beyond discovered entities.
@@ -252,8 +256,9 @@ Additional permissions beyond discovered entities.
         'resources'          => true,
         'pages'              => true,
         'widgets'            => true,
+        'panels'             => true,
         'custom_permissions' => true,
-        'direct_permissions' => true, // assign individual permissions directly to a role
+        'direct_permissions' => true,
     ],
     'grid_columns'                => 2,
     'checkbox_columns'            => 3,

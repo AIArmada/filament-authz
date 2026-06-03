@@ -4,55 +4,24 @@ declare(strict_types=1);
 
 namespace AIArmada\FilamentAuthz\Concerns;
 
-use AIArmada\FilamentAuthz\Models\Role;
 use AIArmada\FilamentAuthz\Support\UserRoleChecker;
 use Filament\Panel;
 
 /**
  * Add this trait to your User model for panel access control.
  *
- * Features:
- * - Auto-creates panel_user role on boot
- * - Assigns role to new users automatically
- * - Works with super admin bypass
+ * Resolution order:
+ * 1. Super admin role (configurable) → immediate access
+ * 2. Panel permission (panel.{panelId}) → access if granted
+ * 3. Fallback → denied
+ *
+ * Panel permissions (e.g. panel.admin, panel.affiliate) are
+ * auto-discovered from registered Filament panels and surfaced
+ * in the "Panels" tab of the role editor. Assigning a panel
+ * permission to a role grants access to that specific panel.
  */
 trait HasPanelAuthz
 {
-    public static function bootHasPanelAuthz(): void
-    {
-        if (app()->runningInConsole()) {
-            return;
-        }
-
-        $config = (array) config('filament-authz.panel_user', []);
-
-        if (! ($config['enabled'] ?? false)) {
-            return;
-        }
-
-        $roleName = $config['name'] ?? 'panel_user';
-        $guards = (array) config('filament-authz.guards', ['web']);
-
-        foreach ($guards as $guard) {
-            Role::findOrCreate($roleName, $guard);
-        }
-
-        static::created(function ($user) use ($roleName): void {
-            if (method_exists($user, 'assignRole')) {
-                $user->assignRole($roleName);
-            }
-        });
-
-        static::deleting(function ($user) use ($roleName): void {
-            if (method_exists($user, 'removeRole')) {
-                $user->removeRole($roleName);
-            }
-        });
-    }
-
-    /**
-     * Determine if the user can access the given panel.
-     */
     public function canAccessPanel(Panel $panel): bool
     {
         $superAdminRole = config('filament-authz.super_admin_role');
@@ -61,14 +30,8 @@ trait HasPanelAuthz
             return true;
         }
 
-        $config = (array) config('filament-authz.panel_user', []);
+        $panelPermission = 'panel.'.$panel->getId();
 
-        if (! ($config['enabled'] ?? false)) {
-            return true;
-        }
-
-        $roleName = $config['name'] ?? 'panel_user';
-
-        return UserRoleChecker::hasRole($this, $roleName);
+        return $this->can($panelPermission);
     }
 }

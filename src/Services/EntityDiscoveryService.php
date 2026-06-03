@@ -10,6 +10,7 @@ use Filament\Panel;
 use Filament\Resources\Resource;
 use Filament\Widgets\Widget;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 /**
  * Discovers Filament entities (Resources, Pages, Widgets) and generates permission names.
@@ -34,7 +35,8 @@ class EntityDiscoveryService
         return collect()
             ->merge($this->discoverResources($panel))
             ->merge($this->discoverPages($panel))
-            ->merge($this->discoverWidgets($panel));
+            ->merge($this->discoverWidgets($panel))
+            ->merge($this->discoverPanels());
     }
 
     /**
@@ -62,7 +64,7 @@ class EntityDiscoveryService
                         'type' => 'resource',
                         'class' => $resource,
                         'permission' => $this->keyBuilder->build($subject, $action),
-                        'label' => $label . ' - ' . $this->getActionLabel($action),
+                        'label' => $label.' - '.$this->getActionLabel($action),
                     ])
                     ->all();
             })
@@ -204,5 +206,28 @@ class EntityDiscoveryService
             ->beforeLast('Resource')
             ->headline()
             ->toString();
+    }
+
+    /**
+     * @return Collection<int, array{type: string, class: class-string, permission: string, label: string}>
+     */
+    public function discoverPanels(): Collection
+    {
+        $excluded = (array) config('filament-authz.panels.exclude', []);
+        $prefix = (string) config('filament-authz.panels.prefix', 'panel');
+
+        return collect(Filament::getPanels())
+            ->filter(fn (Panel $p): bool => ! in_array($p->getId(), $excluded, true))
+            ->map(function (Panel $p) use ($prefix): array {
+                $permission = $this->keyBuilder->build($prefix, $p->getId());
+
+                return [
+                    'type' => 'panel',
+                    'class' => $p::class,
+                    'permission' => $permission,
+                    'label' => Str::headline($p->getId()),
+                ];
+            })
+            ->values();
     }
 }

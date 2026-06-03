@@ -76,6 +76,11 @@ return [
         ],
     ],
 
+    'panels' => [
+        'prefix' => 'panel',
+        'exclude' => [],
+    ],
+
     'custom_permissions' => [],
 
     'sync' => [
@@ -118,6 +123,7 @@ return [
             'widgets' => true,
             'custom_permissions' => true,
             'direct_permissions' => true,
+            'panels' => true,
         ],
         'grid_columns' => 2,
         'checkbox_columns' => 3,

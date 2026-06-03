@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static Collection getResources(?Panel $panel = null)
  * @method static Collection getPages(?Panel $panel = null)
  * @method static Collection getWidgets(?Panel $panel = null)
+ * @method static Collection getPanels()
  * @method static array<string, string> getCustomPermissions()
  * @method static list<string> getAllPermissions(?Panel $panel = null)
  * @method static ?string getPagePermission(string $pageClass, ?Panel $panel = null)

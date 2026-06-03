@@ -17,6 +17,7 @@ use Illuminate\Contracts\Auth\Access\Authorizable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Spatie\Permission\PermissionRegistrar;
 
 /**
@@ -79,12 +80,12 @@ class Authz
         $panel ??= Filament::getCurrentPanel();
         $key = $panel?->getId() ?? 'default';
 
-        if (! isset($this->discoveryCache[$key . '_resources'])) {
-            $this->discoveryCache[$key . '_resources'] = $this->transformResources($panel);
+        if (! isset($this->discoveryCache[$key.'_resources'])) {
+            $this->discoveryCache[$key.'_resources'] = $this->transformResources($panel);
         }
 
         /** @var Collection<int, array{type: string, class: class-string<resource>, subject: string, permissions: array<string, string>, actions: array<string, string>, label: string, model: class-string<Model>|null}> $resources */
-        $resources = $this->discoveryCache[$key . '_resources'];
+        $resources = $this->discoveryCache[$key.'_resources'];
 
         // @phpstan-ignore return.type
         return $resources;
@@ -100,12 +101,12 @@ class Authz
         $panel ??= Filament::getCurrentPanel();
         $key = $panel?->getId() ?? 'default';
 
-        if (! isset($this->discoveryCache[$key . '_pages'])) {
-            $this->discoveryCache[$key . '_pages'] = $this->transformPages($panel);
+        if (! isset($this->discoveryCache[$key.'_pages'])) {
+            $this->discoveryCache[$key.'_pages'] = $this->transformPages($panel);
         }
 
         /** @var Collection<int, array{type: string, class: class-string<Page>, permission: string, label: string}> $pages */
-        $pages = $this->discoveryCache[$key . '_pages'];
+        $pages = $this->discoveryCache[$key.'_pages'];
 
         return $pages;
     }
@@ -120,14 +121,28 @@ class Authz
         $panel ??= Filament::getCurrentPanel();
         $key = $panel?->getId() ?? 'default';
 
-        if (! isset($this->discoveryCache[$key . '_widgets'])) {
-            $this->discoveryCache[$key . '_widgets'] = $this->transformWidgets($panel);
+        if (! isset($this->discoveryCache[$key.'_widgets'])) {
+            $this->discoveryCache[$key.'_widgets'] = $this->transformWidgets($panel);
         }
 
         /** @var Collection<int, array{type: string, class: class-string<Widget>, permission: string, label: string}> $widgets */
-        $widgets = $this->discoveryCache[$key . '_widgets'];
+        $widgets = $this->discoveryCache[$key.'_widgets'];
 
         return $widgets;
+    }
+
+    /**
+     * Get all discovered panels.
+     *
+     * @return Collection<int, array{type: string, id: string, permission: string, label: string}>
+     */
+    public function getPanels(): Collection
+    {
+        if (! isset($this->discoveryCache['panels'])) {
+            $this->discoveryCache['panels'] = $this->transformPanels();
+        }
+
+        return $this->discoveryCache['panels'];
     }
 
     /**
@@ -172,6 +187,10 @@ class Authz
             $permissions[] = $widget['permission'];
         }
 
+        foreach ($this->getPanels() as $p) {
+            $permissions[] = $p['permission'];
+        }
+
         $permissions = array_merge($permissions, array_keys($this->getCustomPermissions()));
 
         return array_values(array_unique($permissions));
@@ -184,7 +203,7 @@ class Authz
      */
     public function getPagePermission(string $pageClass, ?Panel $panel = null): ?string
     {
-        $cacheKey = $pageClass . '_' . ($panel?->getId() ?? 'default');
+        $cacheKey = $pageClass.'_'.($panel?->getId() ?? 'default');
 
         if (isset($this->permissionCache['page'][$cacheKey])) {
             return $this->permissionCache['page'][$cacheKey];
@@ -205,7 +224,7 @@ class Authz
      */
     public function getWidgetPermission(string $widgetClass, ?Panel $panel = null): ?string
     {
-        $cacheKey = $widgetClass . '_' . ($panel?->getId() ?? 'default');
+        $cacheKey = $widgetClass.'_'.($panel?->getId() ?? 'default');
 
         if (isset($this->permissionCache['widget'][$cacheKey])) {
             return $this->permissionCache['widget'][$cacheKey];
@@ -235,7 +254,7 @@ class Authz
     /**
      * Resolve a scopeable model or scope to an authz scope ID.
      */
-    public function resolveScopeId(mixed $scope): string | int | null
+    public function resolveScopeId(mixed $scope): string|int|null
     {
         return AuthzScopeResolver::resolveId($scope);
     }
@@ -309,6 +328,31 @@ class Authz
             $registrar->teams = $teams;
             $this->flushPermissionCache($user);
         }
+    }
+
+    /**
+     * Transform panels into permission structure.
+     *
+     * @return Collection<int, array{type: string, id: string, permission: string, label: string}>
+     */
+    protected function transformPanels(): Collection
+    {
+        $excluded = (array) config('filament-authz.panels.exclude', []);
+        $prefix = (string) config('filament-authz.panels.prefix', 'panel');
+
+        return collect(Filament::getPanels())
+            ->filter(fn (Panel $p): bool => ! in_array($p->getId(), $excluded, true))
+            ->map(function (Panel $p) use ($prefix): array {
+                $permission = $this->buildPermissionKey($prefix, $p->getId());
+
+                return [
+                    'type' => 'panel',
+                    'id' => $p->getId(),
+                    'permission' => $permission,
+                    'label' => Str::headline($p->getId()),
+                ];
+            })
+            ->values();
     }
 
     /**

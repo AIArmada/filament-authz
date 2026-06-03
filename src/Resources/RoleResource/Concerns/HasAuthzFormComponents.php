@@ -61,6 +61,10 @@ trait HasAuthzFormComponents
             $tabs[] = static::getCustomPermissionsTab();
         }
 
+        if ($plugin?->shouldShowPanelsTab() ?? config('filament-authz.role_resource.tabs.panels', true)) {
+            $tabs[] = static::getPanelsTab();
+        }
+
         if (config('filament-authz.role_resource.tabs.direct_permissions', true)) {
             $tabs[] = static::getDirectPermissionsTab();
         }
@@ -165,7 +169,7 @@ trait HasAuthzFormComponents
             ?? config('filament-authz.role_resource.section_column_span', 1);
 
         $lowerLabel = Str::lower($displayLabel);
-        $safeKey = 'permissions_resource_' . md5($resource['class']);
+        $safeKey = 'permissions_resource_'.md5($resource['class']);
 
         return Section::make($displayLabel)
             ->icon('heroicon-o-rectangle-stack')
@@ -230,7 +234,7 @@ trait HasAuthzFormComponents
 
         foreach ($grouped as $packageName => $pages) {
             $searchTerms = $pages->pluck('label')->map(fn (string $l): string => Str::lower($l))->implode('|');
-            $safeKey = 'permissions_pages_' . md5($packageName);
+            $safeKey = 'permissions_pages_'.md5($packageName);
 
             $sections[] = Section::make($packageName)
                 ->description(trans_choice('filament-authz::filament-authz.section.pages_count', $pages->count(), ['count' => $pages->count()]))
@@ -303,7 +307,7 @@ trait HasAuthzFormComponents
 
         foreach ($grouped as $packageName => $widgets) {
             $searchTerms = $widgets->pluck('label')->map(fn (string $l): string => Str::lower($l))->implode('|');
-            $safeKey = 'permissions_widgets_' . md5($packageName);
+            $safeKey = 'permissions_widgets_'.md5($packageName);
 
             $sections[] = Section::make($packageName)
                 ->description(trans_choice('filament-authz::filament-authz.section.widgets_count', $widgets->count(), ['count' => $widgets->count()]))
@@ -356,6 +360,41 @@ trait HasAuthzFormComponents
                             ->columns($checkboxColumns)
                             ->bulkToggleable()
                             ->searchable()
+                            ->gridDirection('row')
+                            ->default([])
+                            ->afterStateHydrated(fn (CheckboxList $component, ?Model $record) => static::setPermissionStateForRecord($component, $record)),
+                    ]),
+            ]);
+    }
+
+    protected static function getPanelsTab(): Tab
+    {
+        $panels = Authz::getPanels();
+        $plugin = static::getPlugin();
+
+        $checkboxColumns = $plugin?->getCheckboxListColumns()
+            ?? config('filament-authz.role_resource.checkbox_columns', 3);
+
+        return Tab::make('panels')
+            ->label(__('filament-authz::filament-authz.tabs.panels'))
+            ->icon('heroicon-o-window')
+            ->badge($panels->count())
+            ->visible($panels->isNotEmpty())
+            ->schema([
+                Section::make(__('filament-authz::filament-authz.section.panels'))
+                    ->description(__('filament-authz::filament-authz.section.panels_description'))
+                    ->collapsible()
+                    ->schema([
+                        CheckboxList::make('permissions_panels')
+                            ->label('')
+                            ->options(
+                                $panels
+                                    ->sortBy('label')
+                                    ->mapWithKeys(fn (array $p): array => [$p['permission'] => $p['label']])
+                                    ->all()
+                            )
+                            ->columns($checkboxColumns)
+                            ->bulkToggleable()
                             ->gridDirection('row')
                             ->default([])
                             ->afterStateHydrated(fn (CheckboxList $component, ?Model $record) => static::setPermissionStateForRecord($component, $record)),
@@ -440,6 +479,12 @@ trait HasAuthzFormComponents
             ->map(static fn (mixed $name): string => (string) $name)
             ->all();
 
+        /** @var list<string> $panelPermissions */
+        $panelPermissions = Authz::getPanels()
+            ->pluck('permission')
+            ->map(static fn (mixed $name): string => (string) $name)
+            ->all();
+
         /** @var list<string> $customPermissions */
         $customPermissions = array_map('strval', array_keys(Authz::getCustomPermissions()));
 
@@ -447,6 +492,7 @@ trait HasAuthzFormComponents
             ...$resourcePermissions,
             ...$pagePermissions,
             ...$widgetPermissions,
+            ...$panelPermissions,
             ...$customPermissions,
         ])->filter(static fn (string $name): bool => $name !== '')
             ->unique()
@@ -490,7 +536,7 @@ trait HasAuthzFormComponents
         $localized = [];
 
         foreach ($permissions as $key => $label) {
-            $translationKey = 'filament-authz::filament-authz.permissions.' . str_replace(['_', '.'], '_', $key);
+            $translationKey = 'filament-authz::filament-authz.permissions.'.str_replace(['_', '.'], '_', $key);
 
             if (trans()->has($translationKey)) {
                 $localized[$key] = __($translationKey);

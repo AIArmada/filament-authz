@@ -78,25 +78,53 @@ FilamentAuthzPlugin::make()
     // Will still use the configured impersonate guard
 ```
 
-## Shared Permission Keys
+## Panel Access Control
 
-Permission keys are global across panels. If you have `UserResource` in both admin and customer panels, they share the same `user.*` permissions. This allows:
+Panel permissions (`panel.admin`, `panel.affiliate`, etc.) are auto-discovered from all registered Filament panels. They appear in the **Panels** tab of the role editor so you can assign specific panel access to any role.
 
-1. **Central role management** — Define roles once, use across panels
-2. **Consistent authorization** — Same permission means same access everywhere
-3. **Simplified auditing** — One set of permissions to track
+### How It Works
 
-To have panel-specific permissions, use different resource names or custom permissions:
+1. The package discovers all panels registered via `Filament::getPanels()`
+2. Each panel generates a permission: `panel.{panelId}` (e.g., `panel.admin`, `panel.affiliate`)
+3. These permissions appear in the "Panels" tab of the role editor
+4. Add the `HasPanelAuthz` trait to your User model for automatic `canAccessPanel()` handling
 
 ```php
-// Admin panel
-'custom_permissions' => [
-    'admin.export-users',
-    'admin.impersonate',
-],
+use AIArmada\FilamentAuthz\Concerns\HasPanelAuthz;
 
-// Customer panel
-'custom_permissions' => [
-    'customer.download-invoices',
-],
+class User extends Authenticatable implements FilamentUser
+{
+    use HasPanelAuthz;
+}
+```
+
+The trait checks:
+1. Super admin role → immediate access
+2. Panel permission (`panel.{panelId}`) → access if assigned
+3. Fallback → denied
+
+### Example: Admin vs Affiliate Panel
+
+Given two panels — `admin` and `affiliate`:
+
+```php
+// Role: "Affiliate Manager"
+$role = Role::findOrCreate('affiliate-manager', 'web');
+$role->givePermissionTo('panel.affiliate');  // Can only access affiliate panel
+
+// Role: "Full Admin"
+$role = Role::findOrCreate('admin', 'web');
+$role->givePermissionTo(['panel.admin', 'panel.affiliate']);  // Can access both
+
+// Super Admin bypasses all panel checks automatically
+```
+
+### Disabling Per-Panel
+
+Hide the Panels tab or exclude specific panel IDs:
+
+```php
+FilamentAuthzPlugin::make()
+    ->panelsTab(false)                    // Remove the Panels tab
+    ->excludePanels(['legacy']);          // Hide specific panel from discovery
 ```

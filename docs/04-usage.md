@@ -445,18 +445,79 @@ $event->impersonated; // User who was being impersonated
 
 ## Panel Access Control
 
-Control which users can access which panels using the `HasPanelAuthz` trait:
+Control which users can access which Filament panels using the `HasPanelAuthz` trait.
+
+### Setup
+
+Add the trait to your User model:
 
 ```php
 namespace App\Models;
 
 use AIArmada\FilamentAuthz\Concerns\HasPanelAuthz;
+use Filament\Models\Contracts\FilamentUser;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser
 {
     use HasPanelAuthz;
 }
 ```
 
-The trait provides a `canAccessPanel()` method that checks for the appropriate panel permission (e.g., `panel.admin`).
+The trait implements `canAccessPanel()` with this resolution order:
+
+1. **Super admin role** — bypasses all panel restrictions (configurable via `super_admin_role`)
+2. **Panel permissions** — `panel.admin`, `panel.affiliate`, etc. (auto-discovered from registered panels)
+3. **Fallback** — denied if no super admin role and no panel permission assigned
+
+### Assigning Panel Access
+
+Panel permissions are auto-discovered and surfaced in the **Panels** tab of the role editor. Navigate to `/authz/roles/{id}/edit` and assign `panel.admin` or `panel.affiliate` to any role. Users with that role gain access to the corresponding panel.
+
+```php
+// Example: Create a role with affiliate panel access
+$role = Role::findOrCreate('affiliate-manager', 'web');
+$role->givePermissionTo('panel.affiliate');
+```
+
+### Disabling the Panels Tab
+
+Hide the Panels tab via the plugin API:
+
+```php
+FilamentAuthzPlugin::make()
+    ->panelsTab(false);
+```
+
+### Excluding Panels
+
+Hide specific panels from discovery:
+
+```php
+FilamentAuthzPlugin::make()
+    ->excludePanels(['legacy']);
+```
+
+Or via config:
+
+```php
+// config/filament-authz.php
+'panels' => [
+    'prefix' => 'panel',
+    'exclude' => ['legacy'],
+],
+```
+
+### Custom Logic
+
+If you need custom access logic beyond panel permissions, override `canAccessPanel()` in your User model:
+
+```php
+public function canAccessPanel(Panel $panel): bool
+{
+    // Custom logic here
+    return true;
+}
+```
+
+The trait's implementation serves as a sensible default for most applications.
