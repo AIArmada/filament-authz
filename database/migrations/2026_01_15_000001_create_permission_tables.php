@@ -32,7 +32,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->string('name');
             $table->string('guard_name');
-            $table->timestamps();
+            $table->timestampsTz();
 
             $table->unique(['name', 'guard_name']);
         });
@@ -47,7 +47,7 @@ return new class extends Migration
 
             $table->string('name');
             $table->string('guard_name');
-            $table->timestamps();
+            $table->timestampsTz();
 
             if ($teams) {
                 $table->unique([$teamForeignKey, 'name', 'guard_name']);

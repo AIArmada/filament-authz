@@ -15,7 +15,7 @@ return new class extends Migration
             $table->string('scopeable_type');
             $table->uuid('scopeable_id');
             $table->string('label')->nullable();
-            $table->timestamps();
+            $table->timestampsTz();
 
             $table->unique(['scopeable_type', 'scopeable_id']);
             $table->index(['scopeable_type', 'scopeable_id']);
