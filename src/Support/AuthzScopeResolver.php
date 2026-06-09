@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace AIArmada\FilamentAuthz\Support;
 
-use AIArmada\FilamentAuthz\Models\AuthzScope;
+use AIArmada\CommerceSupport\Models\AuthzScope;
 use Illuminate\Database\Eloquent\Model;
 
 final class AuthzScopeResolver

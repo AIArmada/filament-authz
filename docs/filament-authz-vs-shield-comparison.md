@@ -538,7 +538,7 @@ STUB;
 ### 10. **OwnerContext Integration**
 - Seamless commerce-support integration
 - Automatic tenant resolution
-- **File:** [`OwnerContextTeamResolver.php`](src/Support/OwnerContextTeamResolver.php)
+- **File:** [`OwnerContextTeamResolver.php`](../../commerce-support/src/Support/OwnerContextTeamResolver.php)
 
 ---
 

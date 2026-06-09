@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace AIArmada\FilamentAuthz\Console;
 
+use AIArmada\CommerceSupport\Models\Permission;
+use AIArmada\CommerceSupport\Models\Role;
 use AIArmada\FilamentAuthz\Console\Concerns\Prohibitable;
 use AIArmada\FilamentAuthz\Facades\Authz;
-use AIArmada\FilamentAuthz\Models\Permission;
-use AIArmada\FilamentAuthz\Models\Role;
 use Filament\Facades\Filament;
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;

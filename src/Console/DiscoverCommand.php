@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace AIArmada\FilamentAuthz\Console;
 
-use AIArmada\FilamentAuthz\Models\Permission;
+use AIArmada\CommerceSupport\Models\Permission;
 use AIArmada\FilamentAuthz\Services\EntityDiscoveryService;
 use Filament\Facades\Filament;
 use Illuminate\Console\Command;

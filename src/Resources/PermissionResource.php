@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace AIArmada\FilamentAuthz\Resources;
 
+use AIArmada\CommerceSupport\Models\AuthzScope;
+use AIArmada\CommerceSupport\Models\Permission;
 use AIArmada\FilamentAuthz\Concerns\ScopesAuthzTenancy;
-use AIArmada\FilamentAuthz\Models\AuthzScope;
-use AIArmada\FilamentAuthz\Models\Permission;
 use AIArmada\FilamentAuthz\Resources\PermissionResource\Pages;
 use Filament\Actions;
 use Filament\Forms;

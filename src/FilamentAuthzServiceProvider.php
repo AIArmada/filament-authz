@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace AIArmada\FilamentAuthz;
 
+use AIArmada\CommerceSupport\Models\Permission as AuthzPermission;
+use AIArmada\CommerceSupport\Models\Role as AuthzRole;
 use AIArmada\CommerceSupport\Support\OwnerContext;
+use AIArmada\CommerceSupport\Support\OwnerContextTeamResolver;
 use AIArmada\FilamentAuthz\Console\DiscoverCommand;
 use AIArmada\FilamentAuthz\Console\GeneratePoliciesCommand;
 use AIArmada\FilamentAuthz\Console\SeederCommand;
@@ -12,15 +15,12 @@ use AIArmada\FilamentAuthz\Console\SuperAdminCommand;
 use AIArmada\FilamentAuthz\Console\SyncAuthzCommand;
 use AIArmada\FilamentAuthz\Guard\SessionGuard;
 use AIArmada\FilamentAuthz\Http\Middleware\ImpersonationBannerMiddleware;
-use AIArmada\FilamentAuthz\Models\Permission as AuthzPermission;
-use AIArmada\FilamentAuthz\Models\Role as AuthzRole;
 use AIArmada\FilamentAuthz\Services\EntityDiscoveryService;
 use AIArmada\FilamentAuthz\Services\ImpersonateManager;
 use AIArmada\FilamentAuthz\Services\PermissionKeyBuilder;
 use AIArmada\FilamentAuthz\Services\WildcardPermissionResolver;
 use AIArmada\FilamentAuthz\Support\AuthzScopeContext;
 use AIArmada\FilamentAuthz\Support\AuthzScopeTeamResolver;
-use AIArmada\FilamentAuthz\Support\OwnerContextTeamResolver;
 use AIArmada\FilamentAuthz\Support\UserRoleChecker;
 use Illuminate\Auth\AuthManager;
 use Illuminate\Auth\Events\Login;

@@ -26,11 +26,16 @@ class SyncAuthzTenant
     /**
      * Handle an incoming request.
      *
+     * Under Octane, the permissions team ID and cached permissions must be
+     * restored after the request to prevent cross-request contamination.
+     *
      * @param  Closure(Request):Response  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
         if (Filament::hasTenancy() && $tenant = Filament::getTenant()) {
+            $previousTeamId = getPermissionsTeamId();
+
             setPermissionsTeamId($tenant->getKey());
 
             if (auth()->hasUser()) {
@@ -41,6 +46,13 @@ class SyncAuthzTenant
             }
 
             app(PermissionRegistrar::class)->forgetCachedPermissions();
+
+            $response = $next($request);
+
+            setPermissionsTeamId($previousTeamId);
+            app(PermissionRegistrar::class)->forgetCachedPermissions();
+
+            return $response;
         }
 
         return $next($request);

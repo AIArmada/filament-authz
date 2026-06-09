@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace AIArmada\FilamentAuthz\Console;
 
+use AIArmada\CommerceSupport\Models\Role;
 use AIArmada\FilamentAuthz\Console\Concerns\Prohibitable;
-use AIArmada\FilamentAuthz\Models\Role;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;

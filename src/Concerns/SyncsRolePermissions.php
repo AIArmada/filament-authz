@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace AIArmada\FilamentAuthz\Concerns;
 
-use AIArmada\FilamentAuthz\Models\Permission;
-use AIArmada\FilamentAuthz\Models\Role;
+use AIArmada\CommerceSupport\Models\Permission;
+use AIArmada\CommerceSupport\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
 /**
