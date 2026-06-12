@@ -138,8 +138,7 @@ class RoleResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return static::getPlugin()?->getNavigationGroup()
-            ?? config('filament-authz.navigation.group');
+        return config('filament-authz.navigation.group');
     }
 
     public static function getNavigationIcon(): ?string
@@ -163,8 +162,7 @@ class RoleResource extends Resource
 
     public static function getNavigationSort(): ?int
     {
-        return static::getPlugin()?->getNavigationSort()
-            ?? config('filament-authz.navigation.sort');
+        return config('filament-authz.navigation.sort');
     }
 
     public static function getNavigationBadge(): ?string
