@@ -45,7 +45,9 @@ class GeneratePoliciesCommand extends Command
 
     public function handle(): int
     {
-        $this->initializeProhibitable();
+        if (! $this->initializeProhibitable()) {
+            return self::FAILURE;
+        }
 
         $panelId = $this->getPanelId();
 

@@ -46,7 +46,9 @@ class SeederCommand extends Command
 
     public function handle(): int
     {
-        $this->initializeProhibitable();
+        if (! $this->initializeProhibitable()) {
+            return self::FAILURE;
+        }
 
         $option = $this->option('option');
 
