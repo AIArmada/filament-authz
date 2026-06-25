@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace AIArmada\FilamentAuthz\Concerns;
 
-use AIArmada\FilamentAuthz\Support\UserRoleChecker;
+use AIArmada\Authz\Support\UserRoleChecker;
 use Filament\Facades\Filament;
 
 /**
@@ -40,7 +40,7 @@ trait CanBeImpersonated
      */
     public function canImpersonate(): bool
     {
-        $superAdminRole = config('filament-authz.super_admin_role');
+        $superAdminRole = config('authz.super_admin_role');
 
         if ($superAdminRole) {
             return UserRoleChecker::hasRole($this, $superAdminRole);
@@ -57,7 +57,7 @@ trait CanBeImpersonated
      */
     public function canBeImpersonated(): bool
     {
-        $superAdminRole = config('filament-authz.super_admin_role');
+        $superAdminRole = config('authz.super_admin_role');
 
         if ($superAdminRole && UserRoleChecker::hasRole($this, $superAdminRole)) {
             return false;

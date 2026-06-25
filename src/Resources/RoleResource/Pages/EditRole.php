@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace AIArmada\FilamentAuthz\Resources\RoleResource\Pages;
 
+use AIArmada\Authz\Concerns\SyncsRolePermissions;
 use AIArmada\CommerceSupport\Models\Role;
-use AIArmada\FilamentAuthz\Concerns\SyncsRolePermissions;
 use AIArmada\FilamentAuthz\Resources\RoleResource;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;

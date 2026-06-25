@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace AIArmada\FilamentAuthz\Console;
 
-use AIArmada\FilamentAuthz\Console\Concerns\Prohibitable;
+use AIArmada\Authz\Console\Concerns\Prohibitable;
 use AIArmada\FilamentAuthz\Facades\Authz;
 use Filament\Facades\Filament;
 use Filament\Panel;
@@ -186,7 +186,7 @@ class GeneratePoliciesCommand extends Command
         $methods = [];
 
         foreach ($permissions as $permission => $label) {
-            $action = Str::afterLast($permission, config('filament-authz.permissions.separator', '.'));
+            $action = Str::afterLast($permission, config('authz.permissions.separator', '.'));
             $methodName = Str::camel($action);
 
             $needsModel = in_array($methodName, ['view', 'update', 'delete', 'restore', 'forceDelete', 'replicate'], true);

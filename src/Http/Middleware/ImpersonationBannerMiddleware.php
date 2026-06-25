@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace AIArmada\FilamentAuthz\Http\Middleware;
 
-use AIArmada\FilamentAuthz\Services\ImpersonateManager;
+use AIArmada\Authz\Services\ImpersonateManager;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class ImpersonationBannerMiddleware
@@ -72,7 +72,12 @@ class ImpersonationBannerMiddleware
 
     protected function renderBanner(): string
     {
-        $user = Auth::user();
+        if (! Route::has('filament-authz.impersonate.leave')) {
+            return '';
+        }
+
+        $guard = $this->manager->getImpersonatorGuardUsingName();
+        $user = $guard === null ? null : auth()->guard($guard)->user();
 
         if ($user === null) {
             return '';

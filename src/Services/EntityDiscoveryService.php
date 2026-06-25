@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AIArmada\FilamentAuthz\Services;
 
+use AIArmada\Authz\Services\PermissionKeyBuilder;
 use Filament\Facades\Filament;
 use Filament\Pages\Page;
 use Filament\Panel;

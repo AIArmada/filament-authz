@@ -126,8 +126,8 @@ File: `config/filament-authz.php`. Key sections:
 | `wildcard_permissions` | `true` | Enable `orders.*` wildcard Gate::before hook |
 | `scoped_to_tenant` | `true` | Scope roles to current Spatie team |
 | `central_app` | `false` | Show team selector in central multi-tenant panel |
-| `authz_scopes.enabled` | `false` | Enable authz scope feature |
-| `authz_scopes.auto_create` | `true` | Auto-create AuthzScope record on scope resolution |
+| `authz.scopes.enabled` | `false` | Enable authz scope feature |
+| `authz.scopes.auto_create` | `true` | Auto-create AuthzScope record on scope resolution |
 
 ### 3.3 Permission Key Format
 
@@ -331,7 +331,7 @@ Two modes coexist:
 - `applyTenantScope()`: adds `where(team_key, currentTeamId)` or `whereNull(team_key)`.
 - `SyncAuthzTenant` middleware: syncs Spatie team ID with Filament tenant on each request, restores previous on exit (Octane-safe).
 
-**B. Authz Scopes** (when `authz_scopes.enabled = true`):
+**B. Authz Scopes** (when `authz.scopes.enabled = true`):
 - `AuthzScopeTeamResolver` implements `PermissionsTeamResolver` using `AuthzScopeContext`.
 - `AuthzScopeContext`: scoped container singleton (`$this->app->scoped(...)`) with `set()`/`clear()`/`withScope()`.
 - `AuthzScopeResolver::resolveId()`: accepts null, `AuthzScope` model, any Model (morph-resolved via `scopeable_type/scopeable_id` with `firstOrCreate` and `auto_create` option), or raw string/int ID.
@@ -404,7 +404,7 @@ On `RequestReceived`, the service provider resets:
 
 ### 5.5 Auth Driver Extension
 
-Service provider extends the `session` auth driver with `AIArmada\FilamentAuthz\Guard\SessionGuard` which adds:
+The core Authz service provider extends the `session` auth driver with `AIArmada\Authz\Guard\SessionGuard`, which adds:
 - `quietLogin(Authenticatable $user)`: sets session + user without Login event or session regen.
 - `quietLogout()`: clears user data without Logout event, remember token update, or session regen.
 
@@ -452,7 +452,7 @@ Discovers resources/pages/widgets/panels from a Filament panel, displays them in
 authz:sync [--flush-cache]
 ```
 
-Reads `config('filament-authz.sync.permissions')` and `config('filament-authz.sync.roles')`, creates/syncs permissions and roles across all configured guards. Destructive command (prohibitable in production).
+Reads `config('authz.sync.permissions')` and `config('authz.sync.roles')`, creates/syncs permissions and roles across all configured guards. Destructive command (prohibitable in production).
 
 ### 6.3 `authz:seeder`
 
@@ -500,7 +500,7 @@ Call `Authz::clearCache()` or use the facade: `\AIArmada\FilamentAuthz\Facades\A
 
 ### `RoleResource` not showing all roles
 - `getEloquentQuery()` applies tenant scope when `!central_app`. Roles without the current team key are excluded.
-- When `authz_scopes.enabled && central_app`, the query limits to configured `scope_options` if set.
+- When `authz.scopes.enabled && central_app`, the query limits to configured `scope_options` if set.
 
 ### `PermissionResource` showing wrong assignment counts
 Roles/users are scoped to current team in `scopedRolesQuery()` and `scopedDirectUsersQuery()` when `scoped_to_tenant && !central_app`.

@@ -30,6 +30,7 @@ Publish the configuration:
 
 ```bash
 php artisan vendor:publish --tag=filament-authz-config
+php artisan vendor:publish --tag=authz-config
 ```
 
 Run migrations:
@@ -38,7 +39,7 @@ Run migrations:
 php artisan migrate
 ```
 
-> `filament-authz` ships UUID-based migrations for Spatie Permission tables (`permissions`, `roles`, `model_has_permissions`, `model_has_roles`, and `role_has_permissions`) plus its own `authz_scopes` migration.
+> The required `authz` package ships UUID-based migrations for Spatie Permission tables (`permissions`, `roles`, `model_has_permissions`, `model_has_roles`, and `role_has_permissions`) plus the `authz_scopes` migration.
 > The schema, models, and pivot keys are all UUID-based together.
 
 ## Setup
@@ -79,23 +80,11 @@ return [
     // Authentication guards to support
     'guards' => ['web', 'api'],
 
-    // Role that bypasses all permission checks
-    'super_admin_role' => 'super_admin',
-
-    // Enable wildcard permission patterns like 'orders.*'
-    'wildcard_permissions' => true,
-
     // Scope roles and permissions to a tenant/scope (Spatie teams)
     'scoped_to_tenant' => true,
 
     // Allow managing roles across scopes in a central panel
     'central_app' => false,
-
-    // Optional authz scopes (institutions, speakers, etc.)
-    'authz_scopes' => [
-        'enabled' => false,
-        'auto_create' => true,
-    ],
 
     'role_resource' => [
         'scope_options' => null,
@@ -107,22 +96,31 @@ return [
         ],
     ],
 
-    // Permission key format
-    'permissions' => [
-        'separator' => '.',
-        'case' => 'camel', // snake, kebab, camel, pascal, upper_snake, lower
-    ],
-
     // Navigation settings
     'navigation' => [
         'group' => 'Authz',
         'sort' => 99,
     ],
 
-    // Custom permissions beyond resources/pages/widgets
-    'custom_permissions' => [
-        // 'approve_posts' => 'Approve Posts',
+];
+```
+
+Core authorization settings live in `config/authz.php`:
+
+```php
+return [
+    'super_admin_role' => 'super_admin',
+    'wildcard_permissions' => true,
+    'scopes' => [
+        'enabled' => false,
+        'auto_create' => true,
+        'enforce' => true,
     ],
+    'permissions' => [
+        'separator' => '.',
+        'case' => 'camel',
+    ],
+    'custom_permissions' => [],
 ];
 ```
 
@@ -176,8 +174,8 @@ Gate::allows('any-permission'); // true
 Use Authz scopes to attach roles/permissions to any model (institutions, speakers, events, etc.).
 
 ```php
-// config/filament-authz.php
-'authz_scopes' => [
+// config/authz.php
+'scopes' => [
     'enabled' => true,
     'auto_create' => true,
 ],
@@ -188,7 +186,7 @@ Use Authz scopes to attach roles/permissions to any model (institutions, speaker
 ```
 
 ```php
-use AIArmada\FilamentAuthz\Concerns\HasAuthzScope;
+use AIArmada\Authz\Concerns\HasAuthzScope;
 use AIArmada\FilamentAuthz\Facades\Authz;
 
 class Workspace extends Model

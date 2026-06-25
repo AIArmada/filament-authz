@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace AIArmada\FilamentAuthz\Resources;
 
+use AIArmada\Authz\Support\ImpersonationScopeGuard;
 use AIArmada\FilamentAuthz\Facades\Authz;
 use AIArmada\FilamentAuthz\Resources\UserResource\Pages;
-use AIArmada\FilamentAuthz\Support\ImpersonationScopeGuard;
 use AIArmada\FilamentAuthz\Support\UserAuthzForm;
 use AIArmada\FilamentAuthz\Tables\Actions\ImpersonateTableAction;
 use Filament\Actions;
@@ -82,7 +82,7 @@ class UserResource extends Resource
             return false;
         }
 
-        $superAdminRole = config('filament-authz.super_admin_role');
+        $superAdminRole = config('authz.super_admin_role');
 
         if (method_exists($user, 'hasRole')) {
             $registrar = app(PermissionRegistrar::class);
@@ -111,7 +111,7 @@ class UserResource extends Resource
             return false;
         }
 
-        $superAdminRole = config('filament-authz.super_admin_role');
+        $superAdminRole = config('authz.super_admin_role');
 
         if (method_exists($user, 'hasRole')) {
             $registrar = app(PermissionRegistrar::class);

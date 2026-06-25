@@ -31,10 +31,10 @@ If a Resource, Page, or Widget isn't appearing in the Role management UI:
 
 ## Super Admin Not Bypassing Permissions
 
-1. **Verify role name** — Check that the role name matches `config('filament-authz.super_admin_role')`:
+1. **Verify role name** — Check that the role name matches `config('authz.super_admin_role')`:
    ```php
    // Default is 'super_admin'
-   config('filament-authz.super_admin_role');
+   config('authz.super_admin_role');
    ```
 
 2. **Verify role assignment** — Ensure the user actually has the role:
@@ -224,7 +224,7 @@ $authzScope = AuthzScope::query()->firstOrCreate(
    use Spatie\Permission\Contracts\PermissionsTeamResolver;
 
    app(PermissionsTeamResolver::class);
-   // AuthzScopeTeamResolver when authz_scopes.enabled = true
+   // AuthzScopeTeamResolver when authz.scopes.enabled = true
    // OwnerContextTeamResolver when using commerce-support + teams
    ```
    For Filament tenancy, register `SyncAuthzTenant` in tenant middleware. For Authz Scopes, use `Authz::withScope()` to set scope explicitly.

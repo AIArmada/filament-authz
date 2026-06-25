@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace AIArmada\FilamentAuthz\Http\Controllers;
 
+use AIArmada\Authz\Services\ImpersonateManager;
+use AIArmada\Authz\Support\ImpersonationScopeGuard;
+use AIArmada\Authz\Support\UserRoleChecker;
 use AIArmada\FilamentAuthz\Actions\ImpersonateAction;
-use AIArmada\FilamentAuthz\Services\ImpersonateManager;
-use AIArmada\FilamentAuthz\Support\ImpersonationScopeGuard;
-use AIArmada\FilamentAuthz\Support\UserRoleChecker;
 use Filament\Facades\Filament;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
@@ -20,7 +20,7 @@ class ImpersonateController
     public function __invoke(Request $request, string $userId): RedirectResponse
     {
         $currentUser = Filament::auth()->user();
-        $guard = (string) config('filament-authz.impersonate.guard', 'web');
+        $guard = (string) config('authz.impersonate.guard', 'web');
 
         if ($currentUser === null) {
             abort(403, 'Not authenticated');
@@ -60,7 +60,7 @@ class ImpersonateController
         if (method_exists($currentUser, 'canImpersonate')) {
             $isAuthorizedImpersonator = (bool) $currentUser->canImpersonate();
         } else {
-            $superAdminRole = (string) config('filament-authz.super_admin_role', '');
+            $superAdminRole = (string) config('authz.super_admin_role', '');
 
             if ($superAdminRole !== '') {
                 $isAuthorizedImpersonator = UserRoleChecker::hasRole($currentUser, $superAdminRole);

@@ -1,33 +1,23 @@
 {
     "name": "aiarmada/filament-authz",
     "description": "Filament v5 permissions suite powered by Spatie laravel-permission with multi-guard, panel-aware gating, and admin UX.",
+    "type": "library",
     "license": "MIT",
-    "homepage": "https://github.com/aiarmada/commerce",
-    "support": {
-        "issues": "https://github.com/aiarmada/commerce/issues",
-        "source": "https://github.com/aiarmada/commerce"
-    },
     "require": {
+        "php": "^8.4",
+        "aiarmada/authz": "self.version",
         "aiarmada/commerce-support": "self.version",
         "filament/filament": "^5.6.7",
-        "spatie/laravel-permission": "^8.0.0",
-        "php": "^8.4"
+        "spatie/laravel-permission": "^8.0.0"
     },
     "autoload": {
         "psr-4": {
-            "AIArmada\\FilamentAuthz\\": "src/",
-            "AIArmada\\FilamentAuthz\\Database\\Factories\\": "database/factories/",
-            "AIArmada\\FilamentAuthz\\Database\\Seeders\\": "database/seeders/"
-        },
-        "files": [
-            "src/helpers.php"
-        ]
+            "AIArmada\\FilamentAuthz\\": "src/"
+        }
     },
     "extra": {
         "laravel": {
-            "providers": [
-                "AIArmada\\FilamentAuthz\\FilamentAuthzServiceProvider"
-            ]
+            "providers": ["AIArmada\\FilamentAuthz\\FilamentAuthzServiceProvider"]
         }
     },
     "config": {

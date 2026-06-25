@@ -151,10 +151,10 @@ public function canImpersonate(): bool
 The package provides global helper functions:
 
 ```php
-use function AIArmada\FilamentAuthz\is_impersonating;
-use function AIArmada\FilamentAuthz\get_impersonator;
-use function AIArmada\FilamentAuthz\can_impersonate;
-use function AIArmada\FilamentAuthz\can_be_impersonated;
+use function AIArmada\Authz\is_impersonating;
+use function AIArmada\Authz\get_impersonator;
+use function AIArmada\Authz\can_impersonate;
+use function AIArmada\Authz\can_be_impersonated;
 
 // Check if currently impersonating
 if (is_impersonating()) {
@@ -223,7 +223,7 @@ Listen to impersonation events for logging/auditing:
 Fired when impersonation starts:
 
 ```php
-use AIArmada\FilamentAuthz\Events\TakeImpersonation;
+use AIArmada\Authz\Events\TakeImpersonation;
 
 class LogImpersonationStart
 {
@@ -242,7 +242,7 @@ class LogImpersonationStart
 Fired when impersonation ends:
 
 ```php
-use AIArmada\FilamentAuthz\Events\LeaveImpersonation;
+use AIArmada\Authz\Events\LeaveImpersonation;
 
 class LogImpersonationEnd
 {

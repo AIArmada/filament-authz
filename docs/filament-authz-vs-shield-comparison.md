@@ -109,7 +109,7 @@ trait CanBeImpersonated
 {
     public function canImpersonate(): bool
     {
-        $superAdminRole = config('filament-authz.super_admin_role');
+        $superAdminRole = config('authz.super_admin_role');
         if ($superAdminRole && method_exists($this, 'hasRole')) {
             return $this->hasRole($superAdminRole);
         }
@@ -297,7 +297,7 @@ public function register(Panel $panel): void
 // FilamentAuthzServiceProvider.php (lines 170-186)
 private function registerTeamResolver(): void
 {
-    if (config('filament-authz.authz_scopes.enabled', false)) {
+    if (config('authz.scopes.enabled', false)) {
         $this->app->singleton(PermissionsTeamResolver::class, AuthzScopeTeamResolver::class);
 
         return;
@@ -527,7 +527,7 @@ STUB;
 - Define roles/permissions in config
 - Sync with `authz:sync` command
 - Perfect for deployment pipelines
-- **Config:** `filament-authz.sync`
+- **Config:** `authz.sync`
 
 ### 9. **Discovery with Preview**
 - `authz:discover --dry-run` to preview

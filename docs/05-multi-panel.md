@@ -40,7 +40,7 @@ The Role resource form uses the current panel to discover what should be display
 ### Tenant Scoping
 If your panel uses tenant-scoping (e.g., via `scopeToTenant()`), the Role resource will automatically apply a global scope to ensure roles are only visible to the correct tenant.
 
-If you need a central admin panel to manage roles across multiple scopes, enable `centralApp()` with `authz_scopes.enabled`.
+If you need a central admin panel to manage roles across multiple scopes, enable `centralApp()` with `authz.scopes.enabled`.
 
 ## SyncAuthzTenant Middleware
 
@@ -71,7 +71,7 @@ Each panel can use a different authentication guard. The impersonation feature r
 ```php
 // Admin panel with web guard
 FilamentAuthzPlugin::make()
-    // Uses config('filament-authz.impersonate.guard') or 'web'
+    // Uses config('authz.impersonate.guard') or 'web'
 
 // API panel with custom guard
 FilamentAuthzPlugin::make()

@@ -37,7 +37,7 @@ final class RoleForm
 
                         $query->where("{$table}.guard_name", $guardName);
 
-                        if (config('filament-authz.authz_scopes.enabled', false) && config('filament-authz.central_app', false)) {
+                        if (config('authz.scopes.enabled', false) && config('filament-authz.central_app', false)) {
                             $teamsKey = app(PermissionRegistrar::class)->teamsKey;
                             $scopeId = $get($teamsKey);
 
@@ -63,7 +63,7 @@ final class RoleForm
                 ->helperText(__('filament-authz::filament-authz.form.guard_name_helper')),
         ];
 
-        if (config('filament-authz.authz_scopes.enabled', false) && config('filament-authz.central_app', false)) {
+        if (config('authz.scopes.enabled', false) && config('filament-authz.central_app', false)) {
             $teamsKey = app(PermissionRegistrar::class)->teamsKey;
 
             $schema[] = Forms\Components\Select::make($teamsKey)

@@ -416,7 +416,7 @@ final class UserAuthzForm
      */
     protected static function resolveScopeLabels(Collection $roles, string $teamsKey, bool $teamsEnabled): array
     {
-        if (! $teamsEnabled || ! config('filament-authz.authz_scopes.enabled', false)) {
+        if (! $teamsEnabled || ! config('authz.scopes.enabled', false)) {
             return [];
         }
 
@@ -444,7 +444,7 @@ final class UserAuthzForm
      */
     protected static function formatRoleLabel(string $name, mixed $scopeId, array $scopeLabels, bool $teamsEnabled): string
     {
-        if (! $teamsEnabled || ! config('filament-authz.authz_scopes.enabled', false)) {
+        if (! $teamsEnabled || ! config('authz.scopes.enabled', false)) {
             return $name;
         }
 

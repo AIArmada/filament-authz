@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace AIArmada\FilamentAuthz\Console;
 
+use AIArmada\Authz\Console\Concerns\Prohibitable;
 use AIArmada\CommerceSupport\Models\Permission;
 use AIArmada\CommerceSupport\Models\Role;
-use AIArmada\FilamentAuthz\Console\Concerns\Prohibitable;
 use AIArmada\FilamentAuthz\Facades\Authz;
 use Filament\Facades\Filament;
 use Illuminate\Console\Command;

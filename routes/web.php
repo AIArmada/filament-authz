@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
+use AIArmada\Authz\Http\Controllers\LeaveImpersonationController;
 use AIArmada\FilamentAuthz\Http\Controllers\ImpersonateController;
-use AIArmada\FilamentAuthz\Http\Controllers\LeaveImpersonationController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['web', 'auth'])

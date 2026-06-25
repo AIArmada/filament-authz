@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace AIArmada\FilamentAuthz\Resources;
 
+use AIArmada\Authz\Concerns\ScopesAuthzTenancy;
 use AIArmada\CommerceSupport\Models\AuthzScope;
 use AIArmada\CommerceSupport\Models\Permission;
-use AIArmada\FilamentAuthz\Concerns\ScopesAuthzTenancy;
 use AIArmada\FilamentAuthz\Resources\PermissionResource\Pages;
 use Filament\Actions;
 use Filament\Forms;
@@ -77,7 +77,7 @@ class PermissionResource extends Resource
             return false;
         }
 
-        $superAdminRole = config('filament-authz.super_admin_role');
+        $superAdminRole = config('authz.super_admin_role');
 
         if (method_exists($user, 'hasRole')) {
             $registrar = app(PermissionRegistrar::class);
@@ -315,7 +315,7 @@ class PermissionResource extends Resource
      */
     protected static function resolveScopeLabels(Collection $roles, string $teamsKey, bool $teamsEnabled): array
     {
-        if (! $teamsEnabled || ! config('filament-authz.authz_scopes.enabled', false)) {
+        if (! $teamsEnabled || ! config('authz.scopes.enabled', false)) {
             return [];
         }
 
@@ -343,7 +343,7 @@ class PermissionResource extends Resource
      */
     protected static function formatRoleLabel(string $name, mixed $scopeId, array $scopeLabels, bool $teamsEnabled): string
     {
-        if (! $teamsEnabled || ! config('filament-authz.authz_scopes.enabled', false)) {
+        if (! $teamsEnabled || ! config('authz.scopes.enabled', false)) {
             return $name;
         }
 

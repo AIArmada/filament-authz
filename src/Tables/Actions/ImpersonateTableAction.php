@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace AIArmada\FilamentAuthz\Tables\Actions;
 
-use AIArmada\FilamentAuthz\Services\ImpersonateManager;
-use AIArmada\FilamentAuthz\Support\ImpersonationScopeGuard;
-use AIArmada\FilamentAuthz\Support\UserRoleChecker;
+use AIArmada\Authz\Services\ImpersonateManager;
+use AIArmada\Authz\Support\ImpersonationScopeGuard;
+use AIArmada\Authz\Support\UserRoleChecker;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Select;
@@ -132,7 +132,7 @@ class ImpersonateTableAction extends Action
             return true;
         }
 
-        $superAdminRole = config('filament-authz.super_admin_role');
+        $superAdminRole = config('authz.super_admin_role');
 
         if ($superAdminRole) {
             return UserRoleChecker::hasRole($actor, $superAdminRole);
@@ -162,7 +162,7 @@ class ImpersonateTableAction extends Action
         }
 
         $currentUser = Filament::auth()->user();
-        $guard = config('filament-authz.impersonate.guard', 'web');
+        $guard = config('authz.impersonate.guard', 'web');
         $manager = app(ImpersonateManager::class);
 
         if ($currentUser === null) {

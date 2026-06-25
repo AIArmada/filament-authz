@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace AIArmada\FilamentAuthz\Resources;
 
+use AIArmada\Authz\Concerns\ScopesAuthzTenancy;
 use AIArmada\CommerceSupport\Models\Role;
-use AIArmada\FilamentAuthz\Concerns\ScopesAuthzTenancy;
 use AIArmada\FilamentAuthz\FilamentAuthzPlugin;
 use AIArmada\FilamentAuthz\Resources\RoleResource\Concerns\HasAuthzFormComponents;
 use AIArmada\FilamentAuthz\Resources\RoleResource\Pages;
@@ -87,7 +87,7 @@ class RoleResource extends Resource
             return false;
         }
 
-        $superAdminRole = config('filament-authz.super_admin_role');
+        $superAdminRole = config('authz.super_admin_role');
 
         if (method_exists($user, 'hasRole')) {
             $registrar = app(PermissionRegistrar::class);
@@ -207,7 +207,7 @@ class RoleResource extends Resource
 
     protected static function applyConfiguredScopeLimit(Builder $query): Builder
     {
-        if (! config('filament-authz.authz_scopes.enabled', false) || ! config('filament-authz.central_app', false)) {
+        if (! config('authz.scopes.enabled', false) || ! config('filament-authz.central_app', false)) {
             return $query;
         }
 

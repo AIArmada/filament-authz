@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace AIArmada\FilamentAuthz\Actions;
 
-use AIArmada\FilamentAuthz\Services\ImpersonateManager;
+use AIArmada\Authz\Services\ImpersonateManager;
 use Filament\Actions\Action;
 use Filament\Navigation\MenuItem;
 

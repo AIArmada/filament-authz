@@ -29,7 +29,7 @@ final class RoleTable
                 ->searchable(),
         ];
 
-        if (config('filament-authz.authz_scopes.enabled', false) && config('filament-authz.central_app', false)) {
+        if (config('authz.scopes.enabled', false) && config('filament-authz.central_app', false)) {
             $teamsKey = app(PermissionRegistrar::class)->teamsKey;
             $scopeOptions = self::getScopeOptions();
 
@@ -73,7 +73,7 @@ final class RoleTable
                 ->sortable(),
         ];
 
-        if (config('filament-authz.authz_scopes.enabled', false) && config('filament-authz.central_app', false)) {
+        if (config('authz.scopes.enabled', false) && config('filament-authz.central_app', false)) {
             $columns[] = TextColumn::make('authzScope.label')
                 ->label(__('filament-authz::filament-authz.table.scope'))
                 ->formatStateUsing(fn (?string $state): string => $state ?? __('filament-authz::filament-authz.table.global_scope'))

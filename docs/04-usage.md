@@ -161,7 +161,7 @@ Enable Spatie teams and Authz scopes:
 Add scopes to your models:
 
 ```php
-use AIArmada\FilamentAuthz\Concerns\HasAuthzScope;
+use AIArmada\Authz\Concerns\HasAuthzScope;
 
 class Workspace extends Model
 {
@@ -383,17 +383,17 @@ class User extends Authenticatable
 Check impersonation state from anywhere:
 
 ```php
-use function AIArmada\FilamentAuthz\is_impersonating;
-use function AIArmada\FilamentAuthz\get_impersonator;
-use function AIArmada\FilamentAuthz\can_impersonate;
-use function AIArmada\FilamentAuthz\can_be_impersonated;
+use function AIArmada\Authz\is_impersonating;
+use function AIArmada\Authz\get_impersonator;
+use function AIArmada\Authz\can_impersonate;
+use function AIArmada\Authz\can_be_impersonated;
 
 if (is_impersonating()) {
     $originalUser = get_impersonator();
     // Show notice or restrict actions
 }
 
-if (can_impersonate($admin, $targetUser)) {
+if (can_impersonate() && can_be_impersonated($targetUser)) {
     // Allow impersonation
 }
 ```
@@ -417,8 +417,8 @@ Use in Blade templates:
 Listen to impersonation events:
 
 ```php
-use AIArmada\FilamentAuthz\Events\TakeImpersonation;
-use AIArmada\FilamentAuthz\Events\LeaveImpersonation;
+use AIArmada\Authz\Events\TakeImpersonation;
+use AIArmada\Authz\Events\LeaveImpersonation;
 
 // In EventServiceProvider
 protected $listen = [

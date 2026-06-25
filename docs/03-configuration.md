@@ -139,10 +139,14 @@ Enable pattern matching like `orders.*` to match `orders.view`, `orders.create`,
 ### Tenant Scoping & Authz Scopes
 
 ```php
+// config/filament-authz.php
 'scoped_to_tenant' => true,
 'central_app' => false,
+```
 
-'authz_scopes' => [
+```php
+// config/authz.php
+'scopes' => [
     'enabled' => false,
     'auto_create' => true,
 ],
@@ -155,13 +159,14 @@ When using Authz Scopes, enable Spatie teams in `config/permission.php` and set 
 'team_foreign_key' => 'authz_scope_id',
 ```
 
-When `authz_scopes.enabled` is true, the package uses Authz scopes for team resolution instead of commerce-support's OwnerContext.
+When `authz.scopes.enabled` is true, the core Authz package uses Authz scopes for team resolution instead of Commerce Support's OwnerContext.
 
 ### Permission Key Format
 
 How permission keys are constructed.
 
 ```php
+// config/authz.php
 'permissions' => [
     'separator' => '.',      // Separator between subject and action
     'case' => 'camel',       // snake, kebab, camel, pascal, upper_snake, lower

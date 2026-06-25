@@ -45,7 +45,7 @@ Use this package when you need authorization management inside Filament panels, 
 
 ## Owner scoping and security notes
 
-- Tenant scoping relies on Spatie teams. When `authz_scopes.enabled` is true, `AuthzScopeTeamResolver` becomes the team resolver.
+- Tenant scoping relies on Spatie teams. When `authz.scopes.enabled` is true, `AuthzScopeTeamResolver` becomes the team resolver.
 - When Authz scopes are disabled but `commerce-support` owner context and Spatie teams are both enabled, the package falls back to `OwnerContextTeamResolver`.
 - `central_app` widens management scope intentionally; when it is `false`, user-role assignment remains constrained to the current team context.
 - The user role form revalidates submitted role IDs on save and throws an `AuthorizationException` for cross-scope submissions.
@@ -89,7 +89,7 @@ Permission keys are constructed using a configurable format:
 | Case | `camel` | `user`, `orderItem` |
 | Separator | `.` | `user.create`, `order.view` |
 
-Configure in `config/filament-authz.php`:
+Configure in `config/authz.php`:
 ```php
 'permissions' => [
     'separator' => '.',
@@ -104,7 +104,7 @@ Authz Scopes let you attach roles and permissions to any model (institutions, sp
 Enable in config:
 
 ```php
-'authz_scopes' => [
+'scopes' => [
     'enabled' => true,
     'auto_create' => true,
 ],

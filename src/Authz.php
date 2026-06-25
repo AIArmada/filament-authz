@@ -4,77 +4,24 @@ declare(strict_types=1);
 
 namespace AIArmada\FilamentAuthz;
 
-use AIArmada\FilamentAuthz\Services\EntityDiscoveryService;
-use AIArmada\FilamentAuthz\Services\PermissionKeyBuilder;
-use AIArmada\FilamentAuthz\Support\AuthzScopeResolver;
-use Closure;
+use AIArmada\Authz\Authz as BaseAuthz;
 use Filament\Facades\Filament;
 use Filament\Pages\Page;
 use Filament\Panel;
 use Filament\Resources\Resource;
 use Filament\Widgets\Widget;
-use Illuminate\Contracts\Auth\Access\Authorizable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
-use Spatie\Permission\PermissionRegistrar;
 
-/**
- * Main Authz service providing entity discovery, permission building, and configuration access.
- *
- * Features: Caches everything, supports wildcards, cleaner API.
- */
-class Authz
+class Authz extends BaseAuthz
 {
-    protected ?Closure $customPermissionKeyBuilder = null;
-
     /** @var array<string, Collection<int, mixed>> */
     protected array $discoveryCache = [];
 
     /** @var array<string, array<string, string>> */
     protected array $permissionCache = [];
 
-    public function __construct(
-        protected EntityDiscoveryService $discovery,
-        protected PermissionKeyBuilder $keyBuilder
-    ) {}
-
-    /**
-     * Customize how permission keys are built.
-     */
-    public function buildPermissionKeyUsing(Closure $callback): static
-    {
-        $this->customPermissionKeyBuilder = $callback;
-
-        return $this;
-    }
-
-    /**
-     * Build a permission key using configured settings or custom builder.
-     */
-    public function buildPermissionKey(string $subject, string $action): string
-    {
-        if ($this->customPermissionKeyBuilder !== null) {
-            return ($this->customPermissionKeyBuilder)($subject, $action);
-        }
-
-        return $this->keyBuilder->build($subject, $action);
-    }
-
-    /**
-     * Get all discovered resources for a panel.
-     *
-     * @return Collection<int, array{
-     *     type: string,
-     *     class: class-string<resource>,
-     *     subject: string,
-     *     permissions: array<string, string>,
-     *     actions: array<string, string>,
-     *     label: string,
-     *     model: class-string<Model>|null
-     * }>
-     */
     public function getResources(?Panel $panel = null): Collection
     {
         $panel ??= Filament::getCurrentPanel();
@@ -87,15 +34,9 @@ class Authz
         /** @var Collection<int, array{type: string, class: class-string<resource>, subject: string, permissions: array<string, string>, actions: array<string, string>, label: string, model: class-string<Model>|null}> $resources */
         $resources = $this->discoveryCache[$key . '_resources'];
 
-        // @phpstan-ignore return.type
         return $resources;
     }
 
-    /**
-     * Get all discovered pages for a panel.
-     *
-     * @return Collection<int, array{type: string, class: class-string<Page>, permission: string, label: string}>
-     */
     public function getPages(?Panel $panel = null): Collection
     {
         $panel ??= Filament::getCurrentPanel();
@@ -111,11 +52,6 @@ class Authz
         return $pages;
     }
 
-    /**
-     * Get all discovered widgets for a panel.
-     *
-     * @return Collection<int, array{type: string, class: class-string<Widget>, permission: string, label: string}>
-     */
     public function getWidgets(?Panel $panel = null): Collection
     {
         $panel ??= Filament::getCurrentPanel();
@@ -131,11 +67,6 @@ class Authz
         return $widgets;
     }
 
-    /**
-     * Get all discovered panels.
-     *
-     * @return Collection<int, array{type: string, id: string, permission: string, label: string}>
-     */
     public function getPanels(): Collection
     {
         if (! isset($this->discoveryCache['panels'])) {
@@ -145,32 +76,6 @@ class Authz
         return $this->discoveryCache['panels'];
     }
 
-    /**
-     * Get custom permissions from config.
-     *
-     * @return array<string, string>
-     */
-    public function getCustomPermissions(): array
-    {
-        $custom = (array) config('filament-authz.custom_permissions', []);
-        $result = [];
-
-        foreach ($custom as $key => $label) {
-            if (is_int($key)) {
-                $result[$label] = str($label)->headline()->toString();
-            } else {
-                $result[$key] = $label;
-            }
-        }
-
-        return $result;
-    }
-
-    /**
-     * Get all entity permissions as a flat array.
-     *
-     * @return list<string>
-     */
     public function getAllPermissions(?Panel $panel = null): array
     {
         $permissions = [];
@@ -196,11 +101,6 @@ class Authz
         return array_values(array_unique($permissions));
     }
 
-    /**
-     * Get permission for a specific page class.
-     *
-     * @param  class-string<Page>  $pageClass
-     */
     public function getPagePermission(string $pageClass, ?Panel $panel = null): ?string
     {
         $cacheKey = $pageClass . '_' . ($panel?->getId() ?? 'default');
@@ -217,11 +117,6 @@ class Authz
         return $permission;
     }
 
-    /**
-     * Get permission for a specific widget class.
-     *
-     * @param  class-string<Widget>  $widgetClass
-     */
     public function getWidgetPermission(string $widgetClass, ?Panel $panel = null): ?string
     {
         $cacheKey = $widgetClass . '_' . ($panel?->getId() ?? 'default');
@@ -238,12 +133,6 @@ class Authz
         return $permission;
     }
 
-    /**
-     * Get permissions for a specific resource class.
-     *
-     * @param  class-string<resource>  $resourceClass
-     * @return array<string, string>
-     */
     public function getResourcePermissions(string $resourceClass, ?Panel $panel = null): array
     {
         $resource = $this->getResources($panel)->first(fn (array $r): bool => $r['class'] === $resourceClass);
@@ -251,90 +140,13 @@ class Authz
         return $resource['permissions'] ?? [];
     }
 
-    /**
-     * Resolve a scopeable model or scope to an authz scope ID.
-     */
-    public function resolveScopeId(mixed $scope): string | int | null
-    {
-        return AuthzScopeResolver::resolveId($scope);
-    }
-
-    /**
-     * Run a callback within a scope context.
-     */
-    public function withScope(mixed $scope, callable $callback, ?Authorizable $user = null): mixed
-    {
-        $previousScope = getPermissionsTeamId();
-        $scopeId = $this->resolveScopeId($scope);
-
-        setPermissionsTeamId($scopeId);
-        $this->flushPermissionCache($user);
-
-        try {
-            return $callback();
-        } finally {
-            setPermissionsTeamId($previousScope);
-            $this->flushPermissionCache($user);
-        }
-    }
-
-    /**
-     * Check a permission within a scope context.
-     */
-    public function userCanInScope(Authorizable $user, string $ability, mixed $scope): bool
-    {
-        return (bool) $this->withScope($scope, fn (): bool => $user->can($ability), $user);
-    }
-
-    /**
-     * Check a permission across all scopes.
-     */
-    public function userHasPermissionAcrossScopes(Authorizable $user, string $ability): bool
-    {
-        return (bool) $this->withoutTeams(fn (): bool => $user->can($ability), $user);
-    }
-
-    /**
-     * Clear all caches.
-     */
     public function clearCache(): void
     {
+        parent::clearCache();
         $this->discoveryCache = [];
         $this->permissionCache = [];
     }
 
-    protected function flushPermissionCache(?Authorizable $user = null): void
-    {
-        app(PermissionRegistrar::class)->forgetCachedPermissions();
-
-        $authUser = $user ?? Auth::user();
-
-        if ($authUser instanceof Model) {
-            $authUser->unsetRelation('roles')->unsetRelation('permissions');
-        }
-    }
-
-    protected function withoutTeams(callable $callback, ?Authorizable $user = null): mixed
-    {
-        $registrar = app(PermissionRegistrar::class);
-        $teams = $registrar->teams;
-
-        $registrar->teams = false;
-        $this->flushPermissionCache($user);
-
-        try {
-            return $callback();
-        } finally {
-            $registrar->teams = $teams;
-            $this->flushPermissionCache($user);
-        }
-    }
-
-    /**
-     * Transform panels into permission structure.
-     *
-     * @return Collection<int, array{type: string, id: string, permission: string, label: string}>
-     */
     protected function transformPanels(): Collection
     {
         $excluded = (array) config('filament-authz.panels.exclude', []);
@@ -355,19 +167,6 @@ class Authz
             ->values();
     }
 
-    /**
-     * Transform resources into permission structure.
-     *
-     * @return Collection<int, array{
-     *     type: string,
-     *     class: class-string<resource>,
-     *     subject: string,
-     *     permissions: array<string, string>,
-     *     actions: array<string, string>,
-     *     label: string,
-     *     model: class-string<Model>|null
-     * }>
-     */
     protected function transformResources(?Panel $panel): Collection
     {
         if ($panel === null) {
@@ -404,15 +203,9 @@ class Authz
             })
             ->values();
 
-        // @phpstan-ignore-next-line Collection covariance false positive with exact array shape.
         return $resources;
     }
 
-    /**
-     * Transform pages into permission structure.
-     *
-     * @return Collection<int, array{type: string, class: class-string<Page>, permission: string, label: string}>
-     */
     protected function transformPages(?Panel $panel): Collection
     {
         if ($panel === null) {
@@ -439,11 +232,6 @@ class Authz
             ->values();
     }
 
-    /**
-     * Transform widgets into permission structure.
-     *
-     * @return Collection<int, array{type: string, class: class-string<Widget>, permission: string, label: string}>
-     */
     protected function transformWidgets(?Panel $panel): Collection
     {
         if ($panel === null) {
@@ -469,9 +257,6 @@ class Authz
             ->values();
     }
 
-    /**
-     * @param  class-string<resource>  $resource
-     */
     protected function getResourceSubject(string $resource): string
     {
         $subject = (string) config('filament-authz.resources.subject', 'model');
@@ -483,9 +268,6 @@ class Authz
         return str(class_basename($resource))->beforeLast('Resource')->toString();
     }
 
-    /**
-     * @param  class-string<resource>  $resource
-     */
     protected function getResourceLabel(string $resource): string
     {
         if (method_exists($resource, 'getModelLabel')) {
@@ -495,10 +277,6 @@ class Authz
         return str(class_basename($resource))->beforeLast('Resource')->headline()->toString();
     }
 
-    /**
-     * @param  class-string<resource>  $resource
-     * @return list<string>
-     */
     protected function getResourceActions(string $resource): array
     {
         $actions = (array) config('filament-authz.resources.actions', []);

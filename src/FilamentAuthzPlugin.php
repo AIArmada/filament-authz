@@ -11,9 +11,6 @@ use Closure;
 use Filament\Contracts\Plugin;
 use Filament\Panel;
 use Filament\Support\Concerns\EvaluatesClosures;
-use Filament\Support\Facades\FilamentView;
-use Filament\View\PanelsRenderHook;
-use Illuminate\Support\Facades\Blade;
 
 /**
  * Filament Authz Plugin with comprehensive fluent API.
@@ -159,20 +156,6 @@ class FilamentAuthzPlugin implements Plugin
     public function boot(Panel $panel): void
     {
         $this->panel = $panel;
-
-        $this->registerImpersonationBanner();
-    }
-
-    protected function registerImpersonationBanner(): void
-    {
-        if (! config('filament-authz.impersonate.enabled', true)) {
-            return;
-        }
-
-        FilamentView::registerRenderHook(
-            PanelsRenderHook::BODY_START,
-            fn (): string => Blade::render('@include("filament-authz::components.impersonation-banner")'),
-        );
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -809,16 +792,20 @@ class FilamentAuthzPlugin implements Plugin
 
         // Permission configuration
         if ($this->permissionCase !== null) {
-            config()->set('filament-authz.permissions.case', $this->evaluate($this->permissionCase));
+            config()->set('authz.permissions.case', $this->evaluate($this->permissionCase));
         }
 
         if ($this->permissionSeparator !== null) {
-            config()->set('filament-authz.permissions.separator', $this->evaluate($this->permissionSeparator));
+            config()->set('authz.permissions.separator', $this->evaluate($this->permissionSeparator));
         }
 
         // Multi-tenancy
-        config()->set('filament-authz.scoped_to_tenant', $this->evaluate($this->scopedToTenant));
-        config()->set('filament-authz.central_app', $this->evaluate($this->centralApp));
+        $scopedToTenant = (bool) $this->evaluate($this->scopedToTenant);
+        $centralApp = (bool) $this->evaluate($this->centralApp);
+
+        config()->set('filament-authz.scoped_to_tenant', $scopedToTenant);
+        config()->set('filament-authz.central_app', $centralApp);
+        config()->set('authz.scopes.enforce', $scopedToTenant && ! $centralApp);
 
         if ($this->userRoleScopeMode !== null) {
             config()->set('filament-authz.user_resource.form.role_scope_mode', $this->getUserRoleScopeMode());
