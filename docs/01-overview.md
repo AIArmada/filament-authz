@@ -191,11 +191,11 @@ class SettingsPage extends Page
 
 ### Models
 
-| Model | Purpose |
-|-------|---------|
-| `Role` | Extends Spatie Role with tenant scoping helpers |
-| `Permission` | Extends Spatie Permission |
-| `AuthzScope` | Model-backed scope for tenant or domain-specific roles |
+| Model | Purpose | Location |
+|-------|---------|--------|
+| `Role` | Extends Spatie Role with tenant scoping helpers | `commerce-support` |
+| `Permission` | Extends Spatie Permission | `commerce-support` |
+| `AuthzScope` | Model-backed scope for tenant or domain-specific roles | `commerce-support` |
 
 ### Traits
 

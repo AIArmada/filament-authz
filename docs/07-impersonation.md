@@ -294,9 +294,9 @@ During impersonation, the following session keys are used:
 
 | Key | Purpose |
 |-----|---------|
-| `impersonate.impersonator_id` | Original user's ID |
-| `impersonate.back_to` | URL to return to after leaving |
-| `impersonate.guard` | Guard used for impersonation |
+| `filament_authz_impersonated_by` | Original user's ID |
+| `filament_authz_impersonator_back_to` | URL to return to after leaving |
+| `filament_authz_impersonator_guard` | Guard used for impersonation |
 
 ### Best Practices
 
@@ -310,7 +310,7 @@ During impersonation, the following session keys are used:
 
 ### Impersonation Not Working
 
-1. Verify `impersonate.enabled` is `true` in config
+1. Verify `authz.impersonate.enabled` is `true` in config
 2. Check that routes are registered: `php artisan route:list | grep impersonate`
 3. Ensure User model has `CanBeImpersonated` trait
 4. Verify the `canImpersonate()` method returns `true` for your user
@@ -323,8 +323,8 @@ During impersonation, the following session keys are used:
 
 ### Cannot Return to Original User
 
-1. Check session data: `session('impersonate.impersonator_id')`
-2. Verify the `back_to` URL is set: `session('impersonate.back_to')`
+1. Check session data: `session('filament_authz_impersonated_by')`
+2. Verify the `back_to` URL is set: `session('filament_authz_impersonator_back_to')`
 3. Ensure the original user still exists in the database
 
 ### CSRF Token Errors

@@ -144,15 +144,15 @@ if ($user->can('export-reports')) {
 
 Authz Scopes let you attach roles to any model (institutions, speakers, events, etc.).
 
-Enable Spatie teams and Authz scopes:
+Enable Spatie teams and Authz scopes in `config/authz.php`:
 
 ```php
 // config/permission.php
 'teams' => true,
 'team_foreign_key' => 'authz_scope_id',
 
-// config/filament-authz.php
-'authz_scopes' => [
+// config/authz.php
+'scopes' => [
     'enabled' => true,
     'auto_create' => true,
 ],
@@ -177,7 +177,7 @@ class Project extends Model
 Check permissions within a scope:
 
 ```php
-use AIArmada\FilamentAuthz\Facades\Authz;
+use AIArmada\Authz\Facades\Authz;
 
 Authz::userCanInScope($user, 'project.update', $workspace);
 Authz::withScope($project, fn () => $user->can('project.update'));

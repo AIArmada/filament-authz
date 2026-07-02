@@ -125,6 +125,7 @@ Authentication guards the package supports. Permissions are created for each gua
 Role name that bypasses **all** permission checks via `Gate::before`.
 
 ```php
+// config/authz.php
 'super_admin_role' => 'super_admin',
 ```
 
@@ -295,7 +296,7 @@ Additional permissions beyond discovered entities.
 
 ### Sync Configuration
 
-Define roles and permissions to sync from config.
+Define roles and permissions to sync from config in `config/authz.php`:
 
 ```php
 'sync' => [
@@ -314,12 +315,12 @@ Run sync with: `php artisan authz:sync --flush-cache`
 
 ### Impersonation
 
-Configure user impersonation behavior.
+Configure user impersonation behavior in `config/authz.php`:
 
 ```php
 'impersonate' => [
-    'enabled' => true,      // Enable impersonation feature
-    'guard' => 'web',       // Authentication guard for impersonation
+    'enabled' => env('AUTHZ_IMPERSONATE_ENABLED', true),
+    'guard' => env('AUTHZ_IMPERSONATE_GUARD', 'web'),
 ],
 ```
 
