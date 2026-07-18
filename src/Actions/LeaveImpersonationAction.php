@@ -35,11 +35,12 @@ class LeaveImpersonationAction extends Action
         $this->label(__('filament-authz::filament-authz.impersonate.leave'))
             ->icon('heroicon-o-arrow-left-on-rectangle')
             ->color('danger')
-            ->visible(fn (): bool => ImpersonateAction::isImpersonating())
+            ->visible(fn (): bool => app(ImpersonateManager::class)->isImpersonating())
             ->action(function (): void {
-                $backTo = app(ImpersonateManager::class)->getBackToUrl();
+                $manager = app(ImpersonateManager::class);
+                $backTo = $manager->getBackToUrl();
 
-                ImpersonateAction::leave();
+                $manager->leave();
 
                 $this->redirect(self::sanitizeBackToUrl($backTo));
             });
@@ -76,7 +77,7 @@ class LeaveImpersonationAction extends Action
             ->label(__('filament-authz::filament-authz.impersonate.leave'))
             ->icon('heroicon-o-arrow-left-on-rectangle')
             ->color('danger')
-            ->visible(fn (): bool => ImpersonateAction::isImpersonating())
+            ->visible(fn (): bool => app(ImpersonateManager::class)->isImpersonating())
             ->postAction(route('filament-authz.impersonate.leave'));
     }
 }

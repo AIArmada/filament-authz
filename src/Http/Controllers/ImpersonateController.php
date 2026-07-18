@@ -7,7 +7,6 @@ namespace AIArmada\FilamentAuthz\Http\Controllers;
 use AIArmada\Authz\Services\ImpersonateManager;
 use AIArmada\Authz\Support\ImpersonationScopeGuard;
 use AIArmada\Authz\Support\UserRoleChecker;
-use AIArmada\FilamentAuthz\Actions\ImpersonateAction;
 use Filament\Facades\Filament;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
@@ -26,7 +25,7 @@ class ImpersonateController
             abort(403, 'Not authenticated');
         }
 
-        if (ImpersonateAction::isImpersonating()) {
+        if (app(ImpersonateManager::class)->isImpersonating()) {
             abort(403, 'Already impersonating');
         }
 

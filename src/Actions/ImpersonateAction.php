@@ -33,21 +33,6 @@ use Illuminate\Database\Eloquent\Model;
  */
 class ImpersonateAction extends Action
 {
-    /**
-     * @deprecated Use ImpersonateManager::SESSION_KEY instead
-     */
-    public const SESSION_KEY = 'filament_authz_impersonator_id';
-
-    /**
-     * @deprecated Use ImpersonateManager::SESSION_GUARD instead
-     */
-    public const SESSION_GUARD_KEY = 'filament_authz_impersonator_guard';
-
-    /**
-     * @deprecated Use ImpersonateManager::SESSION_BACK_TO instead
-     */
-    public const SESSION_BACK_TO_KEY = 'filament_authz_impersonator_back_to';
-
     protected Model | Authenticatable | null $targetRecord = null;
 
     public static function getDefaultName(): ?string
@@ -172,47 +157,6 @@ class ImpersonateAction extends Action
 
         $backTo = request()->header('referer') ?? Filament::getUrl();
 
-        $success = $manager->take($currentUser, $targetUser, $guard, $backTo);
-
-        if ($success) {
-            // Redirect is now handled by the modal form's redirect_to field
-            // The manager->take() handles session storage
-        }
-    }
-
-    /**
-     * @deprecated Use app(ImpersonateManager::class)->isImpersonating() instead
-     */
-    public static function isImpersonating(): bool
-    {
-        return app(ImpersonateManager::class)->isImpersonating();
-    }
-
-    /**
-     * @deprecated Use app(ImpersonateManager::class)->getImpersonatorId() instead
-     */
-    public static function getImpersonatorId(): mixed
-    {
-        return app(ImpersonateManager::class)->getImpersonatorId();
-    }
-
-    /**
-     * @deprecated Use app(ImpersonateManager::class)->leave() instead
-     */
-    public static function leave(): ?string
-    {
-        $manager = app(ImpersonateManager::class);
-        $backTo = $manager->getBackToUrl();
-        $manager->leave();
-
-        return $backTo;
-    }
-
-    /**
-     * @deprecated Use app(ImpersonateManager::class)->getImpersonatorGuard() instead
-     */
-    public static function getImpersonatorGuard(): ?string
-    {
-        return app(ImpersonateManager::class)->getImpersonatorGuard();
+        $manager->take($currentUser, $targetUser, $guard, $backTo);
     }
 }
