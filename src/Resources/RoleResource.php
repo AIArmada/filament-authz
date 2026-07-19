@@ -13,7 +13,6 @@ use AIArmada\FilamentAuthz\Resources\RoleResource\Schemas\RoleForm;
 use AIArmada\FilamentAuthz\Resources\RoleResource\Tables\RoleTable;
 use Closure;
 use Filament\Facades\Filament;
-use Illuminate\Support\Str;
 use Filament\Panel;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -22,6 +21,7 @@ use Illuminate\Contracts\Auth\Access\Authorizable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Spatie\Permission\PermissionRegistrar;
 use Throwable;
 
@@ -229,10 +229,7 @@ class RoleResource extends Resource
 
         return $query->where(function (Builder $query) use ($teamsKey, $validUuids): void {
             $query->whereNull($teamsKey);
-
-            if ($validUuids !== []) {
-                $query->orWhereIn($teamsKey, $validUuids);
-            }
+            $query->orWhereIn($teamsKey, $validUuids);
         });
     }
 
