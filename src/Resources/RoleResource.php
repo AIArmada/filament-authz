@@ -13,6 +13,7 @@ use AIArmada\FilamentAuthz\Resources\RoleResource\Schemas\RoleForm;
 use AIArmada\FilamentAuthz\Resources\RoleResource\Tables\RoleTable;
 use Closure;
 use Filament\Facades\Filament;
+use Illuminate\Support\Str;
 use Filament\Panel;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -220,11 +221,17 @@ class RoleResource extends Resource
         $teamsKey = app(PermissionRegistrar::class)->teamsKey;
         $scopeIds = array_keys($configured);
 
-        return $query->where(function (Builder $query) use ($teamsKey, $scopeIds): void {
+        $validUuids = array_filter($scopeIds, static fn (string $id): bool => Str::isUuid($id));
+
+        if ($validUuids === []) {
+            return $query->whereNull($teamsKey);
+        }
+
+        return $query->where(function (Builder $query) use ($teamsKey, $validUuids): void {
             $query->whereNull($teamsKey);
 
-            if ($scopeIds !== []) {
-                $query->orWhereIn($teamsKey, $scopeIds);
+            if ($validUuids !== []) {
+                $query->orWhereIn($teamsKey, $validUuids);
             }
         });
     }
