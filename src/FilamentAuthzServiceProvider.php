@@ -73,9 +73,9 @@ class FilamentAuthzServiceProvider extends ServiceProvider
             return;
         }
 
-        $this->app['events']->listen(RequestReceived::class, function (): void {
-            if ($this->app->has(Authz::class)) {
-                $this->app->make(Authz::class)->clearCache();
+        $this->app['events']->listen(RequestReceived::class, static function (): void {
+            if (app()->has(Authz::class)) {
+                app(Authz::class)->clearCache();
             }
         });
     }
