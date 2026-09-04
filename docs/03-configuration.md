@@ -35,7 +35,7 @@ $panel->plugins([
         ->excludeResources([UserResource::class])
         ->excludePages([Dashboard::class])
         ->excludeWidgets([AccountWidget::class])
-        ->excludePanels(['legacy'])           // Panels IDs to exclude from discovery
+        ->excludePanels(['internal'])         // Panel IDs to exclude from discovery
 
         // UI layout
         ->gridColumns(3)                      // Tab grid columns
@@ -224,7 +224,7 @@ Panels registered with Filament are auto-discovered. Each panel generates a perm
 ```php
 'panels' => [
     'prefix' => 'panel',   // Permission key prefix
-    'exclude' => [],        // Panel IDs to exclude (e.g. ['legacy'])
+    'exclude' => [],        // Panel IDs to exclude (e.g. ['internal'])
 ],
 ```
 

@@ -126,5 +126,5 @@ Hide the Panels tab or exclude specific panel IDs:
 ```php
 FilamentAuthzPlugin::make()
     ->panelsTab(false)                    // Remove the Panels tab
-    ->excludePanels(['legacy']);          // Hide specific panel from discovery
+    ->excludePanels(['internal']);        // Hide specific panel from discovery
 ```

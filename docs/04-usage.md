@@ -495,7 +495,7 @@ Hide specific panels from discovery:
 
 ```php
 FilamentAuthzPlugin::make()
-    ->excludePanels(['legacy']);
+    ->excludePanels(['internal']);
 ```
 
 Or via config:
@@ -504,7 +504,7 @@ Or via config:
 // config/filament-authz.php
 'panels' => [
     'prefix' => 'panel',
-    'exclude' => ['legacy'],
+    'exclude' => ['internal'],
 ],
 ```
 
