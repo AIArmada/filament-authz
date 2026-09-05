@@ -39,7 +39,7 @@ Use this package when you need authorization management inside Filament panels, 
 - `RoleResource`, `PermissionResource`, and `UserResource` provide the admin UI
 - `Authz` coordinates discovery, permission building, and cache management
 - `EntityDiscoveryService` finds Filament resources, pages, and widgets
-- `PermissionKeyBuilder` and `WildcardPermissionResolver` generate and match permission keys
+- `PermissionKeyBuilder` and `WildcardPermissionResolver` generate and match permission keys (implemented in `aiarmada/authz` core; this package consumes them)
 - `AuthzScope` models scope-backed teams for roles and permissions
 - `ImpersonateManager` manages impersonation state, routes, and cleanup
 
@@ -185,9 +185,9 @@ class SettingsPage extends Page
 |---------|---------|
 | `Authz` | Main service for entity discovery, permission building, and caching |
 | `EntityDiscoveryService` | Discovers Filament Resources, Pages, and Widgets |
-| `PermissionKeyBuilder` | Builds permission keys with configurable case and separator |
-| `WildcardPermissionResolver` | Resolves wildcard patterns like `orders.*` |
-| `ImpersonateManager` | Manages user impersonation session state |
+| `PermissionKeyBuilder` | Builds permission keys with configurable case and separator (lives in `authz` core) |
+| `WildcardPermissionResolver` | Resolves wildcard patterns like `orders.*` (lives in `authz` core) |
+| `ImpersonateManager` | Manages user impersonation session state (core in `authz`; `ImpersonateAction` / `LeaveImpersonationAction` UI here) |
 
 ### Models
 
