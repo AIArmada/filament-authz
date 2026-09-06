@@ -7,7 +7,7 @@
     "php": "^8.4",
     "aiarmada/authz": "self.version",
     "aiarmada/commerce-support": "self.version",
-    "filament/filament": "^5.6.7",
+    "filament/filament": "^5.7.0",
     "spatie/laravel-permission": "^8.0.0"
   },
   "autoload": {
