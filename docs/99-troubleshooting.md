@@ -140,8 +140,8 @@ When using multiple panels with different configurations:
 
 1. **Check session data** — Required keys must exist:
    ```php
-   session('impersonate.impersonator_id');
-   session('impersonate.back_to');
+   session('authz_impersonator_id');
+   session('authz_impersonator_back_to');
    ```
 2. **Verify original user exists** — The impersonator must still be in the database
 
@@ -171,7 +171,7 @@ app(PermissionRegistrar::class)->forgetCachedPermissions();
 
 ## Commands Not Running in Production
 
-`filament-authz` ships a `CommandProhibitor` helper. If your application calls `CommandProhibitor::prohibitDestructiveCommands(true)`, these commands are blocked:
+The `authz` core package ships the `CommandProhibitor` helper. If your application calls `CommandProhibitor::prohibitDestructiveCommands(true)`, these commands are blocked:
 
 - `authz:policies`
 - `authz:seeder`
@@ -182,7 +182,7 @@ app(PermissionRegistrar::class)->forgetCachedPermissions();
 
 ## Wildcard Permissions Not Matching
 
-1. **Verify enabled** — Check `config('filament-authz.wildcard_permissions')` is `true`
+1. **Verify enabled** — Check `config('authz.wildcard_permissions')` is `true`
 2. **Check pattern** — Wildcards use `*` character:
    - `orders.*` matches `orders.view`, `orders.create`, etc.
    - `*.view` matches `orders.view`, `products.view`, etc.
@@ -190,30 +190,6 @@ app(PermissionRegistrar::class)->forgetCachedPermissions();
    ```php
    $user->givePermissionTo('orders.*');
    ```
-
-## Authz Scope Auto-Creation Failing (SQLite / Strict Databases)
-
-If you see an integrity constraint violation when `auto_create` attempts to insert a new `authz_scopes` row:
-
-```
-SQLSTATE[23000]: Integrity constraint violation: NOT NULL constraint failed: authz_scopes.scopeable_type
-```
-
-This was a bug in `AuthzScopeResolver` where `firstOrCreate()` was called with an empty first argument, causing `scopeable_type` and `scopeable_id` to be omitted from the INSERT. This was fixed so that these columns are now passed as the matching attributes to `firstOrCreate()`.
-
-If you encounter this on an older version, verify that `AuthzScopeResolver::resolveId()` passes `scopeable_type` and `scopeable_id` as the first argument to `firstOrCreate()`:
-
-```php
-$authzScope = AuthzScope::query()->firstOrCreate(
-    [
-        'scopeable_type' => $scopeableType,
-        'scopeable_id' => $scopeableId,
-    ],
-    [
-        'label' => $label,
-    ],
-);
-```
 
 ## Tenant Scoping Not Working
 

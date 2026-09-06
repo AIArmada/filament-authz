@@ -76,7 +76,7 @@ class ImpersonationBannerMiddleware
             return '';
         }
 
-        $guard = $this->manager->getImpersonatorGuardUsingName();
+        $guard = $this->manager->getImpersonatedGuardName();
         $user = $guard === null ? null : auth()->guard($guard)->user();
 
         if ($user === null) {

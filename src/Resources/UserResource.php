@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AIArmada\FilamentAuthz\Resources;
 
 use AIArmada\Authz\Support\ImpersonationScopeGuard;
+use AIArmada\Authz\Support\UserRoleChecker;
 use AIArmada\FilamentAuthz\Facades\Authz;
 use AIArmada\FilamentAuthz\Resources\UserResource\Pages;
 use AIArmada\FilamentAuthz\Support\UserAuthzForm;
@@ -22,7 +23,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Spatie\Permission\PermissionRegistrar;
 
 class UserResource extends Resource
 {
@@ -38,7 +38,7 @@ class UserResource extends Resource
             return $model;
         }
 
-        $guard = config('filament-authz.guards.0', 'web');
+        $guard = config('authz.guards.0', 'web');
         $provider = config("auth.guards.{$guard}.provider");
 
         return (string) config("auth.providers.{$provider}.model", 'App\\Models\\User');
@@ -82,20 +82,10 @@ class UserResource extends Resource
             return false;
         }
 
-        $superAdminRole = config('authz.super_admin_role');
+        $superAdminRole = (string) config('authz.super_admin_role', '');
 
-        if (method_exists($user, 'hasRole')) {
-            $registrar = app(PermissionRegistrar::class);
-            $teams = $registrar->teams;
-            $registrar->teams = false;
-
-            try {
-                if ((bool) call_user_func([$user, 'hasRole'], $superAdminRole)) {
-                    return true;
-                }
-            } finally {
-                $registrar->teams = $teams;
-            }
+        if ($superAdminRole !== '' && UserRoleChecker::hasGlobalRole($user, $superAdminRole)) {
+            return true;
         }
 
         return $user->can('role.viewAny')
@@ -111,20 +101,10 @@ class UserResource extends Resource
             return false;
         }
 
-        $superAdminRole = config('authz.super_admin_role');
+        $superAdminRole = (string) config('authz.super_admin_role', '');
 
-        if (method_exists($user, 'hasRole')) {
-            $registrar = app(PermissionRegistrar::class);
-            $teams = $registrar->teams;
-            $registrar->teams = false;
-
-            try {
-                if ((bool) call_user_func([$user, 'hasRole'], $superAdminRole)) {
-                    return true;
-                }
-            } finally {
-                $registrar->teams = $teams;
-            }
+        if ($superAdminRole !== '' && UserRoleChecker::hasGlobalRole($user, $superAdminRole)) {
+            return true;
         }
 
         $ability = Authz::buildPermissionKey('User', $action);

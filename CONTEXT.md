@@ -43,8 +43,8 @@ keywords:
 ## Key surfaces
 - Resources: `PermissionResource`, `RoleResource`, `UserResource`
 - Actions/Services: `Actions/ImpersonateAction`, `Actions/LeaveImpersonationAction`, `Services/EntityDiscoveryService`, `Support/UserAuthzForm`
-- Config `filament-authz.php`: `guards`, `panel_user`, `enabled`, `name`, `scoped_to_tenant`, `central_app`, `resources`, `subject`, `actions`, `extra_actions`
+- Config `filament-authz.php`: `scoped_to_tenant`, `central_app`, `resources`, `pages`, `widgets`, `panels`, `navigation`, `role_resource`, `user_resource`, `impersonate`
 
 ## Docs map
 - Start: `01-overview` → `03-configuration` → `04-usage` → `99-troubleshooting`
-- Deep dives: `05-multi-panel.md`, `06-cli-reference.md`, `07-impersonation.md`, `filament-authz-vs-shield-comparison.md`, `filament-shield-features-checklist.md`
+- Deep dives: `05-multi-panel.md`, `06-cli-reference.md`, `07-impersonation.md`

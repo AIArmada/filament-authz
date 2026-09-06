@@ -38,7 +38,7 @@ class LeaveImpersonationAction extends Action
             ->visible(fn (): bool => app(ImpersonateManager::class)->isImpersonating())
             ->action(function (): void {
                 $manager = app(ImpersonateManager::class);
-                $backTo = $manager->getBackToUrl();
+                $backTo = $manager->getBackTo();
 
                 $manager->leave();
 

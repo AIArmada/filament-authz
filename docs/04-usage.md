@@ -398,6 +398,8 @@ if (can_impersonate() && can_be_impersonated($targetUser)) {
 }
 ```
 
+With scope enforcement enabled, `can_be_impersonated()` also requires a role or direct permission assignment for the target in the active scope. This matches the server-side controller and action checks; an unassigned target is not impersonatable.
+
 ### Blade Directives
 
 Use in Blade templates:
@@ -407,7 +409,7 @@ Use in Blade templates:
     <div class="alert">You are impersonating {{ auth()->user()->name }}</div>
 @endimpersonating
 
-@canImpersonate($targetUser)
+@canBeImpersonated($targetUser)
     <button>Impersonate</button>
 @endcanImpersonate
 ```

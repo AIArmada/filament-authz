@@ -20,7 +20,7 @@ final class RoleTable
      */
     public static function configure(Table $table, string $modelClass): Table
     {
-        $guards = config('filament-authz.guards', ['web']);
+        $guards = config('authz.guards', ['web']);
         $filters = [
             SelectFilter::make('guard_name')
                 ->label(__('filament-authz::filament-authz.filter.guard'))

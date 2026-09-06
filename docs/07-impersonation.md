@@ -146,6 +146,12 @@ public function canImpersonate(): bool
 }
 ```
 
+### Scope enforcement
+
+When `authz.scopes.enforce` is enabled and Spatie teams are enabled, the target must have a role or direct permission assignment in the active scope. A user with no scoped assignment is intentionally not impersonatable, even by a global super-admin. This check is applied by the controller, actions, table actions, and `can_be_impersonated()` helper.
+
+The configured super-admin role is global: a global assignment bypasses authorization gates and actor checks regardless of the active scope. It does not bypass the target scope check.
+
 ## Helper Functions
 
 The package provides global helper functions:
@@ -176,7 +182,7 @@ if (can_be_impersonated($targetUser)) {
 ### Function Signatures
 
 ```php
-is_impersonating(?string $guard = null): bool
+is_impersonating(): bool
 can_impersonate(?string $guard = null): bool
 can_be_impersonated(Authenticatable $user, ?string $guard = null): bool
 get_impersonator(): ?Authenticatable
@@ -294,9 +300,10 @@ During impersonation, the following session keys are used:
 
 | Key | Purpose |
 |-----|---------|
-| `filament_authz_impersonated_by` | Original user's ID |
-| `filament_authz_impersonator_back_to` | URL to return to after leaving |
-| `filament_authz_impersonator_guard` | Guard used for impersonation |
+| `authz_impersonator_id` | Original user's ID |
+| `authz_impersonator_back_to` | URL to return to after leaving |
+| `authz_impersonator_guard` | Guard used by the original user |
+| `authz_impersonated_guard` | Guard used by the impersonated user |
 
 ### Best Practices
 
@@ -310,7 +317,7 @@ During impersonation, the following session keys are used:
 
 ### Impersonation Not Working
 
-1. Verify `authz.impersonate.enabled` is `true` in config
+1. Verify `filament-authz.impersonate.enabled` is `true` in config
 2. Check that routes are registered: `php artisan route:list | grep impersonate`
 3. Ensure User model has `CanBeImpersonated` trait
 4. Verify the `canImpersonate()` method returns `true` for your user
@@ -323,8 +330,8 @@ During impersonation, the following session keys are used:
 
 ### Cannot Return to Original User
 
-1. Check session data: `session('filament_authz_impersonated_by')`
-2. Verify the `back_to` URL is set: `session('filament_authz_impersonator_back_to')`
+1. Check session data: `session('authz_impersonator_id')`
+2. Verify the `back_to` URL is set: `session('authz_impersonator_back_to')`
 3. Ensure the original user still exists in the database
 
 ### CSRF Token Errors

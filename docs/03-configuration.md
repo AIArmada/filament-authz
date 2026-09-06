@@ -47,7 +47,6 @@ $panel->plugins([
         ->widgetsTab(true)                    // Show widgets tab
         ->panelsTab(true)                     // Show panels tab
         ->customPermissionsTab(true)          // Show custom permissions tab
-        ->simpleResourcePermissionView(false) // Flat list instead of grouped view
         ->localizePermissionLabels(false)     // Use lang file for permission labels
         ->userRoleScopeMode('all')            // all, global_only, scoped_only
         ->roleScopeOptionsUsing(null)         // Limit selectable Authz scopes
@@ -59,8 +58,6 @@ $panel->plugins([
         // Multitenancy / scopes
         ->scopeToTenant()
         ->centralApp()
-        ->tenantRelationshipName('organization')
-        ->tenantOwnershipRelationshipName('owner')
 ]);
 ```
 
@@ -93,7 +90,6 @@ $panel->plugins([
 | `widgetsTab()` | `bool\|Closure` | `true` | Show widgets tab |
 | `panelsTab()` | `bool\|Closure` | `true` | Show panels tab |
 | `customPermissionsTab()` | `bool\|Closure` | `true` | Show custom permissions tab |
-| `simpleResourcePermissionView()` | `bool\|Closure` | `false` | Flat list instead of grouped view |
 | `localizePermissionLabels()` | `bool\|Closure` | `false` | Use lang files for permission labels |
 | `userRoleScopeMode()` | `string\|Closure\|null` | `null` | Limit user role editing: `all`, `global_only`, `scoped_only` |
 | `roleScopeOptionsUsing()` | `array\|Closure\|null` | `null` | Override selectable Authz scopes in RoleResource |
@@ -101,8 +97,6 @@ $panel->plugins([
 | `permissionSeparator()` | `string\|null` | `'.'` | Key separator |
 | `scopeToTenant()` | `bool\|Closure` | `true` | Enable tenant scoping |
 | `centralApp()` | `bool\|Closure` | `false` | Enable central app scope selector |
-| `tenantRelationshipName()` | `string\|null` | `null` | Tenant relation name |
-| `tenantOwnershipRelationshipName()` | `string\|null` | `null` | Tenant ownership relation name |
 
 ## Config File Reference
 
@@ -114,11 +108,14 @@ php artisan vendor:publish --tag=filament-authz-config
 
 ### Guards
 
-Authentication guards the package supports. Permissions are created for each guard.
+Authentication guards the package supports. Permissions are created for each guard. Configure this shared list in the core `authz.guards` setting so CLI commands and the Filament UI use the same list.
 
 ```php
-'guards' => ['web', 'api'],
+// config/authz.php
+'guards' => ['web'],
 ```
+
+Every configured guard must also exist in `config/auth.php`.
 
 ### Super Admin Role
 

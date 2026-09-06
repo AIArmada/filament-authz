@@ -26,7 +26,7 @@ trait HasPanelAuthz
     {
         $superAdminRole = config('authz.super_admin_role');
 
-        if ($superAdminRole && UserRoleChecker::hasRole($this, $superAdminRole)) {
+        if ($superAdminRole && UserRoleChecker::hasGlobalRole($this, $superAdminRole)) {
             return true;
         }
 

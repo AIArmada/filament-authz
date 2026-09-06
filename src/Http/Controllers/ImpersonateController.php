@@ -62,7 +62,7 @@ class ImpersonateController
             $superAdminRole = (string) config('authz.super_admin_role', '');
 
             if ($superAdminRole !== '') {
-                $isAuthorizedImpersonator = UserRoleChecker::hasRole($currentUser, $superAdminRole);
+                $isAuthorizedImpersonator = UserRoleChecker::hasGlobalRole($currentUser, $superAdminRole);
             }
         }
 

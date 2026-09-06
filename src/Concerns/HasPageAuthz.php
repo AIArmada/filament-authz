@@ -16,7 +16,7 @@ use Filament\Facades\Filament;
  *
  * Features:
  * - Uses discovered permissions (not hardcoded names)
- * - Caches permission lookups for performance
+ * - Uses the request-scoped discovery cache for performance
  * - Super admin bypass built-in via Gate::before
  * - Falls back gracefully if permission not found
  *
@@ -32,8 +32,6 @@ use Filament\Facades\Filament;
  */
 trait HasPageAuthz
 {
-    protected static ?string $authzPermissionKey = null;
-
     public static function canAccess(): bool
     {
         $user = Filament::auth()?->user();
@@ -44,7 +42,7 @@ trait HasPageAuthz
 
         $superAdminRole = config('authz.super_admin_role');
 
-        if ($superAdminRole && UserRoleChecker::hasRole($user, $superAdminRole)) {
+        if ($superAdminRole && UserRoleChecker::hasGlobalRole($user, $superAdminRole)) {
             return true;
         }
 
@@ -64,21 +62,16 @@ trait HasPageAuthz
 
     /**
      * Get the permission for this page from discovered entities.
-     * Caches the result for performance.
      */
     public static function getAuthzPermission(): ?string
     {
-        if (static::$authzPermissionKey === null) {
-            $customPermission = static::authzPermission();
+        $customPermission = static::authzPermission();
 
-            if (is_string($customPermission) && $customPermission !== '') {
-                static::$authzPermissionKey = $customPermission;
-            } else {
-                static::$authzPermissionKey = Authz::getPagePermission(static::class) ?? '';
-            }
+        if (is_string($customPermission) && $customPermission !== '') {
+            return $customPermission;
         }
 
-        return static::$authzPermissionKey !== '' ? static::$authzPermissionKey : null;
+        return Authz::getPagePermission(static::class);
     }
 
     /**

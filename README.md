@@ -11,14 +11,14 @@ A comprehensive Filament v5 authorization package extending Spatie laravel-permi
 - **Multi-Panel Support** — Configure different authorization settings per Filament panel
 - **Policy Generation** — CLI command to scaffold Laravel Policies based on discovered permissions
 - **Authz Scopes + Tenant Scoping** — Scope roles to any model (institutions, speakers, etc.) with central app support and optional commerce-support integration
-- **UUID-First Schema** — Permissions, roles, and pivot tables use UUID keys and follow Spatie Permission's documented UUID approach
+- **UUID-First Schema** — Uses the UUID-backed migrations provided by the `aiarmada/authz` core package
 
 ## Requirements
 
 - PHP 8.4+
 - Laravel 13+
 - Filament 5.0+
-- Spatie laravel-permission 7.2+
+- Spatie laravel-permission 8.0+
 
 ## Installation
 
@@ -39,7 +39,7 @@ Run migrations:
 php artisan migrate
 ```
 
-> The required `authz` package ships UUID-based migrations for Spatie Permission tables (`permissions`, `roles`, `model_has_permissions`, `model_has_roles`, and `role_has_permissions`) plus the `authz_scopes` migration.
+> The required `authz` package ships UUID-based migrations for Spatie Permission tables (`permissions`, `roles`, `model_has_permissions`, `model_has_roles`, and `role_has_permissions`) plus the `authz_scopes` migration. `filament-authz` owns the Filament UI and does not ship database migrations.
 > The schema, models, and pivot keys are all UUID-based together.
 
 ## Setup
@@ -77,9 +77,6 @@ public function panel(Panel $panel): Panel
 ```php
 // config/filament-authz.php
 return [
-    // Authentication guards to support
-    'guards' => ['web', 'api'],
-
     // Scope roles and permissions to a tenant/scope (Spatie teams)
     'scoped_to_tenant' => true,
 
@@ -104,6 +101,9 @@ return [
 
 ];
 ```
+
+Configure the shared authentication guard list in `config/authz.php` under
+`authz.guards`. It is consumed by both core commands and the Filament UI.
 
 Core authorization settings live in `config/authz.php`:
 
@@ -245,7 +245,9 @@ Or through config:
 ],
 ```
 
-## Commands
+## Related core commands
+
+The `authz` core package owns the shared authorization commands below:
 
 ### Sync Permissions
 
@@ -253,23 +255,6 @@ Sync roles and permissions from configuration:
 
 ```bash
 php artisan authz:sync
-```
-
-### Doctor
-
-Diagnose permission configuration issues:
-
-```bash
-php artisan authz:doctor
-```
-
-### Cache
-
-Manage permission cache:
-
-```bash
-php artisan authz:cache --flush
-php artisan authz:cache --warm
 ```
 
 ## Permission Naming Convention

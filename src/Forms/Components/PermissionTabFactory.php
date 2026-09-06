@@ -407,7 +407,7 @@ final class PermissionTabFactory
      */
     public static function getDirectPermissionOptions(mixed $guard): array
     {
-        $guards = (array) config('filament-authz.guards', ['web']);
+        $guards = (array) config('authz.guards', ['web']);
         $guardName = is_string($guard) && $guard !== '' ? $guard : ($guards[0] ?? 'web');
 
         $registrar = app(PermissionRegistrar::class);

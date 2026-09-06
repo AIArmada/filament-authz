@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AIArmada\FilamentAuthz;
 
 use AIArmada\Authz\Services\PermissionKeyBuilder;
+use AIArmada\Authz\Support\CommandProhibitor;
 use AIArmada\FilamentAuthz\Console\DiscoverCommand;
 use AIArmada\FilamentAuthz\Console\GeneratePoliciesCommand;
 use AIArmada\FilamentAuthz\Console\SeederCommand;
@@ -19,6 +20,11 @@ class FilamentAuthzServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/filament-authz.php', 'filament-authz');
+
+        CommandProhibitor::register([
+            GeneratePoliciesCommand::class,
+            SeederCommand::class,
+        ]);
 
         $this->app->singleton(FilamentAuthzPlugin::class);
         $this->app->singleton(EntityDiscoveryService::class);

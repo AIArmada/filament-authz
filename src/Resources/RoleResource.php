@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AIArmada\FilamentAuthz\Resources;
 
 use AIArmada\Authz\Concerns\ScopesAuthzTenancy;
+use AIArmada\Authz\Support\UserRoleChecker;
 use AIArmada\CommerceSupport\Models\Role;
 use AIArmada\FilamentAuthz\FilamentAuthzPlugin;
 use AIArmada\FilamentAuthz\Resources\RoleResource\Concerns\HasAuthzFormComponents;
@@ -88,31 +89,10 @@ class RoleResource extends Resource
             return false;
         }
 
-        $superAdminRole = config('authz.super_admin_role');
+        $superAdminRole = (string) config('authz.super_admin_role', '');
 
-        if (method_exists($user, 'hasRole')) {
-            $registrar = app(PermissionRegistrar::class);
-            $teamsEnabled = $registrar->teams;
-            $teamsKey = $registrar->teamsKey;
-
-            if ($teamsEnabled) {
-                $originalTeamId = $registrar->getPermissionsTeamId();
-
-                try {
-                    $registrar->setPermissionsTeamId(null);
-
-                    if ($user->hasRole($superAdminRole)) {
-                        return true;
-                    }
-                } finally {
-                    $registrar->setPermissionsTeamId($originalTeamId);
-                    $registrar->forgetCachedPermissions();
-                }
-            } else {
-                if ($user->hasRole($superAdminRole)) {
-                    return true;
-                }
-            }
+        if ($superAdminRole !== '' && UserRoleChecker::hasGlobalRole($user, $superAdminRole)) {
+            return true;
         }
 
         return $user->can($ability);

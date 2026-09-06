@@ -101,7 +101,7 @@ class DiscoverCommand extends Command
      */
     protected function createPermissions(array $permissions): void
     {
-        $guards = $this->validateGuards((array) config('filament-authz.guards', ['web']));
+        $guards = $this->validateGuards((array) config('authz.guards', ['web']));
 
         if ($guards === []) {
             warning('No valid guards configured.');

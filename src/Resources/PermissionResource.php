@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AIArmada\FilamentAuthz\Resources;
 
 use AIArmada\Authz\Concerns\ScopesAuthzTenancy;
+use AIArmada\Authz\Support\UserRoleChecker;
 use AIArmada\CommerceSupport\Models\AuthzScope;
 use AIArmada\CommerceSupport\Models\Permission;
 use AIArmada\FilamentAuthz\Resources\PermissionResource\Pages;
@@ -77,20 +78,10 @@ class PermissionResource extends Resource
             return false;
         }
 
-        $superAdminRole = config('authz.super_admin_role');
+        $superAdminRole = (string) config('authz.super_admin_role', '');
 
-        if (method_exists($user, 'hasRole')) {
-            $registrar = app(PermissionRegistrar::class);
-            $teams = $registrar->teams;
-            $registrar->teams = false;
-
-            try {
-                if ((bool) call_user_func([$user, 'hasRole'], $superAdminRole)) {
-                    return true;
-                }
-            } finally {
-                $registrar->teams = $teams;
-            }
+        if ($superAdminRole !== '' && UserRoleChecker::hasGlobalRole($user, $superAdminRole)) {
+            return true;
         }
 
         return $user->can($ability);
@@ -120,7 +111,7 @@ class PermissionResource extends Resource
 
     public static function form(Schema $form): Schema
     {
-        $guards = config('filament-authz.guards', ['web']);
+        $guards = config('authz.guards', ['web']);
 
         return $form->schema([
             Section::make('Permission Details')
@@ -159,7 +150,7 @@ class PermissionResource extends Resource
 
     public static function table(Table $table): Table
     {
-        $guards = config('filament-authz.guards', ['web']);
+        $guards = config('authz.guards', ['web']);
 
         return $table->columns([
             TextColumn::make('name')->searchable()->sortable()->copyable(),

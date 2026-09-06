@@ -20,7 +20,7 @@ final class RoleForm
      */
     public static function configure(Schema $form, string $modelClass, callable $getAuthzFormComponents): Schema
     {
-        $guards = config('filament-authz.guards', ['web']);
+        $guards = config('authz.guards', ['web']);
         $schema = [
             Forms\Components\TextInput::make('name')
                 ->label(__('filament-authz::filament-authz.form.name'))
@@ -32,7 +32,7 @@ final class RoleForm
                     ignoreRecord: true,
                     modifyQueryUsing: function (Builder $query, Get $get): Builder {
                         $table = $query->getModel()->getTable();
-                        $guards = (array) config('filament-authz.guards', ['web']);
+                        $guards = (array) config('authz.guards', ['web']);
                         $guardName = (string) ($get('guard_name') ?: ($guards[0] ?? 'web'));
 
                         $query->where("{$table}.guard_name", $guardName);

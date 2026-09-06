@@ -9,7 +9,7 @@ title: Installation
 - PHP 8.4+
 - Laravel 13+
 - Filament 5.0+
-- Spatie laravel-permission 7.2+
+- Spatie laravel-permission 8.0+
 
 ## Composer
 
@@ -21,9 +21,9 @@ composer require aiarmada/filament-authz
 
 ## Configure Spatie Permission
 
-`filament-authz` is UUID-first.
+The `authz` core package provides the UUID-first schema used by `filament-authz`.
 
-The package ships UUID-based Spatie Permission migrations, so you do not need to publish Spatie's default migration just to get started:
+The core package ships UUID-based Spatie Permission migrations, so you do not need to publish Spatie's default migration just to get started:
 
 ```bash
 php artisan migrate
@@ -40,7 +40,7 @@ This package follows Spatie Permission's documented UUID approach:
 - `role_has_permissions.permission_id` and `role_has_permissions.role_id` are UUID
 - team / scope foreign keys stay UUID when teams are enabled
 
-If your authenticatable model already uses UUIDs, the included schema lines up with that model out of the box.
+If your authenticatable model already uses UUIDs, the core schema lines up with that model out of the box.
 
 ### Important Notes
 
@@ -48,7 +48,7 @@ If your authenticatable model already uses UUIDs, the included schema lines up w
 - Keep your `model_morph_key` as a UUID column when your authenticatable model uses UUIDs
 - Keep your `team_foreign_key` as a UUID column when your authz scope / tenant IDs use UUIDs
 
-The package's UUID migration is the source of truth.
+The `authz` package's UUID migration is the source of truth; `filament-authz` owns no migrations.
 
 ## Set Up Your User Model
 

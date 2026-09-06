@@ -43,7 +43,7 @@ trait CanBeImpersonated
         $superAdminRole = config('authz.super_admin_role');
 
         if ($superAdminRole) {
-            return UserRoleChecker::hasRole($this, $superAdminRole);
+            return UserRoleChecker::hasGlobalRole($this, $superAdminRole);
         }
 
         return false;
@@ -59,7 +59,7 @@ trait CanBeImpersonated
     {
         $superAdminRole = config('authz.super_admin_role');
 
-        if ($superAdminRole && UserRoleChecker::hasRole($this, $superAdminRole)) {
+        if ($superAdminRole && UserRoleChecker::hasGlobalRole($this, $superAdminRole)) {
             return false;
         }
 

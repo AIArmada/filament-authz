@@ -20,7 +20,6 @@ use Filament\Support\Concerns\EvaluatesClosures;
  * - Tenant-scoped permissions (optional)
  * - Central app mode for multi-tenant architectures
  * - Customizable layout (grid columns, checkbox columns, section spans)
- * - Simple/detailed resource permission views
  * - Localized permission labels
  */
 class FilamentAuthzPlugin implements Plugin
@@ -94,8 +93,6 @@ class FilamentAuthzPlugin implements Plugin
 
     protected bool | Closure $panelsTab = true;
 
-    protected bool | Closure $simpleResourcePermissionView = false;
-
     protected bool | Closure $localizePermissionLabels = false;
 
     protected string | Closure | null $permissionCase = null;
@@ -105,10 +102,6 @@ class FilamentAuthzPlugin implements Plugin
     protected bool | Closure $scopedToTenant = true;
 
     protected bool | Closure $centralApp = false;
-
-    protected string | Closure | null $tenantOwnershipRelationship = null;
-
-    protected string | Closure | null $tenantRelationshipName = null;
 
     public static function make(): static
     {
@@ -380,16 +373,6 @@ class FilamentAuthzPlugin implements Plugin
     }
 
     /**
-     * Enable simple flat view for resource permissions instead of grouped sections.
-     */
-    public function simpleResourcePermissionView(bool | Closure $condition = true): static
-    {
-        $this->simpleResourcePermissionView = $condition;
-
-        return $this;
-    }
-
-    /**
      * Enable localized permission labels based on configured translations.
      */
     public function localizePermissionLabels(bool | Closure $condition = true): static
@@ -473,26 +456,6 @@ class FilamentAuthzPlugin implements Plugin
         return $this;
     }
 
-    /**
-     * Set the tenant relationship name on the user model.
-     */
-    public function tenantRelationshipName(string | Closure | null $name): static
-    {
-        $this->tenantRelationshipName = $name;
-
-        return $this;
-    }
-
-    /**
-     * Set the tenant ownership relationship name on the role model.
-     */
-    public function tenantOwnershipRelationshipName(string | Closure | null $name): static
-    {
-        $this->tenantOwnershipRelationship = $name;
-
-        return $this;
-    }
-
     // ─────────────────────────────────────────────────────────────────────────
     // State Checks
     // ─────────────────────────────────────────────────────────────────────────
@@ -505,11 +468,6 @@ class FilamentAuthzPlugin implements Plugin
     public function isCentralApp(): bool
     {
         return $this->evaluate($this->centralApp);
-    }
-
-    public function hasSimpleResourcePermissionView(): bool
-    {
-        return $this->evaluate($this->simpleResourcePermissionView);
     }
 
     public function hasLocalizedPermissionLabels(): bool
@@ -612,16 +570,6 @@ class FilamentAuthzPlugin implements Plugin
     public function getResourceCheckboxListColumns(): array | int
     {
         return $this->evaluate($this->resourceCheckboxListColumns);
-    }
-
-    public function getTenantOwnershipRelationshipName(): ?string
-    {
-        return $this->evaluate($this->tenantOwnershipRelationship);
-    }
-
-    public function getTenantRelationshipName(): ?string
-    {
-        return $this->evaluate($this->tenantRelationshipName);
     }
 
     /**
@@ -786,8 +734,6 @@ class FilamentAuthzPlugin implements Plugin
         config()->set('filament-authz.role_resource.tabs.custom_permissions', $this->evaluate($this->customPermissionsTab));
         config()->set('filament-authz.role_resource.tabs.panels', $this->evaluate($this->panelsTab));
 
-        // View modes
-        config()->set('filament-authz.role_resource.simple_resource_permission_view', $this->evaluate($this->simpleResourcePermissionView));
         config()->set('filament-authz.role_resource.localize_permission_labels', $this->evaluate($this->localizePermissionLabels));
 
         // Permission configuration

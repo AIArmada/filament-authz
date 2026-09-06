@@ -18,7 +18,7 @@ Use this package when you need authorization management inside Filament panels, 
 - Permission key formatting, wildcard resolution, and sync helpers
 - Authz scope resolution for model-backed permission teams
 - Impersonation routes, middleware, banner UI, and manager services
-- Console commands such as `authz:discover`, `authz:policies`, `authz:super-admin`, and `authz:sync`
+- Adapter console commands such as `authz:discover`, `authz:policies`, and `authz:seeder`
 
 ## What this package does not own
 
@@ -50,6 +50,7 @@ Use this package when you need authorization management inside Filament panels, 
 - `central_app` widens management scope intentionally; when it is `false`, user-role assignment remains constrained to the current team context.
 - The user role form revalidates submitted role IDs on save and throws an `AuthorizationException` for cross-scope submissions.
 - Impersonation routes are registered under `web` + `auth` middleware and the banner middleware is appended to the `web` group when impersonation is enabled.
+- A global super-admin role bypasses the active team filter for authorization and actor checks; target scope assignment is still required for impersonation when enforcement is enabled.
 
 ## Features
 
@@ -64,14 +65,14 @@ Use this package when you need authorization management inside Filament panels, 
 - **Super Admin Bypass** — Built-in bypass logic for a designated Super Admin role
 - **User Impersonation** — Securely impersonate users with banner notification and panel selection
 - **Fluent Plugin API** — Clean, closure-based API for per-panel configuration
-- **UUID-First Permission Schema** — Ships UUID-based permission-table migrations plus the `authz_scopes` migration
+- **UUID-First Permission Schema** — Uses the UUID-based permission and scope migrations shipped by the `authz` core package
 - **Laravel Octane Compatible** — Automatic cache clearing between Octane requests
 
 ## Core Concepts
 
 ### Discovery vs. Generation
 
-Unlike packages that rely on generated permission files, Filament Authz **dynamically discovers** your Filament entities. As you add new Resources, Pages, or Widgets, they automatically appear in the Role management UI without running commands.
+Unlike packages that rely on generated permission files, Filament Authz **dynamically discovers** your Filament entities. As you add new Resources, Pages, or Widgets, they automatically appear in the Role management UI. Run `authz:discover --create` to persist new permission rows before assigning them to a role.
 
 ```php
 // Permissions are discovered automatically from:
@@ -112,6 +113,8 @@ Enable in config:
 
 Use `HasAuthzScope` on scopeable models to create scopes automatically and set readable labels.
 
+Deleting an Authz scope removes its scoped roles and role/direct-permission assignments. Global roles and permissions are unaffected.
+
 ### Multi-Tenancy
 
 When `scopeToTenant()` is enabled on the plugin (default), roles and permissions are automatically filtered by the current tenant context. You can drive the context using Filament tenancy + `SyncAuthzTenant`, or with Authz Scopes.
@@ -119,14 +122,12 @@ When `scopeToTenant()` is enabled on the plugin (default), roles and permissions
 ```php
 FilamentAuthzPlugin::make()
     ->scopeToTenant()
-    ->centralApp()
-    ->tenantRelationshipName('organization')
-    ->tenantOwnershipRelationshipName('owner');
+    ->centralApp();
 ```
 
 ## Database and migration ownership
 
-`filament-authz` ships UUID-first migrations for:
+The `authz` core package ships UUID-first migrations for:
 
 - `permissions`
 - `roles`
@@ -137,7 +138,8 @@ FilamentAuthzPlugin::make()
 
 That means:
 
-- do **not** run Spatie's default auto-increment permission migration on top of the package migration
+- `filament-authz` itself has no `database/` directory and does not own migrations
+- do **not** run Spatie's default auto-increment permission migration on top of the `authz` migration
 - keep your application's `User` model and user table under application ownership
 - align Spatie teams configuration with your active scope key when using tenant or Authz-scope-aware permissions
 
@@ -175,7 +177,7 @@ class SettingsPage extends Page
 - PHP 8.4+
 - Laravel 13+
 - Filament 5.0+
-- Spatie laravel-permission 7.2+
+- Spatie laravel-permission 8.0+
 
 ## Architecture
 

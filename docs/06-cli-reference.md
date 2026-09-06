@@ -4,7 +4,10 @@ title: CLI Reference
 
 # CLI Reference
 
-Filament Authz provides several Artisan commands to maintain your authorization system.
+Filament Authz provides the Filament discovery and policy commands below. The
+`authz:super-admin` and `authz:sync` commands belong to the `authz` core
+package but are included here because they are commonly used alongside the
+Filament adapter.
 
 ## authz:discover
 
@@ -31,6 +34,10 @@ php artisan authz:discover --panel=admin --create
 # See what would be created without actually creating
 php artisan authz:discover --dry-run
 ```
+
+The Role resource only assigns permissions that already exist for the role's
+guard. Persist discovered permissions with `--create` before selecting them in
+the role form; arbitrary submitted permission names are rejected.
 
 ## authz:policies
 
@@ -97,7 +104,7 @@ php artisan authz:sync [options]
 |--------|-------------|
 | `--flush-cache` | Flush permission cache after sync |
 
-Configure in `config/filament-authz.php`:
+Configure in `config/authz.php`:
 ```php
 'sync' => [
     'permissions' => [

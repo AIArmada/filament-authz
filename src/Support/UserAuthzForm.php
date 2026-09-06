@@ -91,7 +91,7 @@ final class UserAuthzForm
 
     protected static function applyPermissionScope(Builder $query): Builder
     {
-        $guards = (array) config('filament-authz.guards', ['web']);
+        $guards = (array) config('authz.guards', ['web']);
         $guard = $guards[0] ?? 'web';
 
         $table = $query->getModel()->getTable();
@@ -123,7 +123,7 @@ final class UserAuthzForm
      */
     protected static function getRoleOptions(): array
     {
-        $guards = (array) config('filament-authz.guards', ['web']);
+        $guards = (array) config('authz.guards', ['web']);
         $guard = (string) ($guards[0] ?? 'web');
 
         $registrar = app(PermissionRegistrar::class);

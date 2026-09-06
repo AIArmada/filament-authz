@@ -7,13 +7,6 @@ use Filament\Widgets\FilamentInfoWidget;
 
 return [
 
-    'guards' => ['web', 'api'],
-
-    'panel_user' => [
-        'enabled' => false,
-        'name' => 'panel_user',
-    ],
-
     'scoped_to_tenant' => true,
 
     'central_app' => false,

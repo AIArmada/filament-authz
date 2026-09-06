@@ -121,7 +121,7 @@ class ImpersonateAction extends Action
         $superAdminRole = config('authz.super_admin_role');
 
         if ($superAdminRole) {
-            return UserRoleChecker::hasRole($actor, $superAdminRole);
+            return UserRoleChecker::hasGlobalRole($actor, $superAdminRole);
         }
 
         return false;

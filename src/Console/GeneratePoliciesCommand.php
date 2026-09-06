@@ -243,7 +243,7 @@ STUB;
 
     protected function getUserModel(): string
     {
-        $guard = config('filament-authz.guards.0', 'web');
+        $guard = config('authz.guards.0', 'web');
         $provider = config("auth.guards.{$guard}.provider");
 
         return config("auth.providers.{$provider}.model", 'App\\Models\\User');

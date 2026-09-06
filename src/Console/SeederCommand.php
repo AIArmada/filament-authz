@@ -112,7 +112,7 @@ class SeederCommand extends Command
             $panel = Filament::getPanel($panelId);
             Filament::setCurrentPanel($panel);
 
-            $guards = (array) config('filament-authz.guards', ['web']);
+            $guards = (array) config('authz.guards', ['web']);
             $permissions = Authz::getAllPermissions($panel);
 
             foreach ($permissions as $permission) {
