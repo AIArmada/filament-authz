@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace AIArmada\FilamentAuthz\Resources;
 
 use AIArmada\Authz\Concerns\ScopesAuthzTenancy;
+use AIArmada\Authz\Models\AuthzScope;
+use AIArmada\Authz\Models\Permission;
 use AIArmada\Authz\Support\UserRoleChecker;
-use AIArmada\CommerceSupport\Models\AuthzScope;
-use AIArmada\CommerceSupport\Models\Permission;
 use AIArmada\FilamentAuthz\Resources\PermissionResource\Pages;
 use Filament\Actions;
 use Filament\Forms;
