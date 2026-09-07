@@ -43,6 +43,10 @@ the role form; arbitrary submitted permission names are rejected.
 
 Generate Laravel policies for Filament resources.
 
+Generated record policies check the model's current owner scope with
+OwnerWriteGuard before performing the permission check. Keep that guard in
+place when customizing generated policies for tenant-owned models.
+
 ```bash
 php artisan authz:policies [options]
 ```

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace AIArmada\FilamentAuthz\Concerns;
 
 use AIArmada\Authz\Support\UserRoleChecker;
-use AIArmada\FilamentAuthz\Facades\Authz;
+use AIArmada\FilamentAuthz\Facades\FilamentAuthz;
 use Filament\Facades\Filament;
 
 /**
@@ -71,7 +71,7 @@ trait HasPageAuthz
             return $customPermission;
         }
 
-        return Authz::getPagePermission(static::class);
+        return FilamentAuthz::getPagePermission(static::class);
     }
 
     /**

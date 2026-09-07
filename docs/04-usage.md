@@ -191,18 +191,18 @@ When `central_app` is enabled, the Role resource includes a scope selector — l
 Use the `Authz` facade to build and check permissions:
 
 ```php
-use AIArmada\FilamentAuthz\Facades\Authz;
+use AIArmada\FilamentAuthz\Facades\FilamentAuthz;
 
 // Build a permission key using configured format
-$key = Authz::buildPermissionKey('OrderItem', 'viewAny');
+$key = FilamentAuthz::buildPermissionKey('OrderItem', 'viewAny');
 // Returns: 'orderItem.viewAny' (with camel case + dot separator)
 
 // Get all permissions for a resource
-$permissions = Authz::getResourcePermissions(OrderResource::class);
+$permissions = FilamentAuthz::getResourcePermissions(OrderResource::class);
 // Returns: ['order.viewAny' => 'View Any', 'order.view' => 'View', ...]
 
 // Get all discovered permissions
-$allPermissions = Authz::getAllPermissions();
+$allPermissions = FilamentAuthz::getAllPermissions();
 
 // Check access
 if (auth()->user()->can($key)) {
@@ -215,13 +215,13 @@ if (auth()->user()->can($key)) {
 Override the default key builder for special cases:
 
 ```php
-use AIArmada\FilamentAuthz\Facades\Authz;
+use AIArmada\FilamentAuthz\Facades\FilamentAuthz;
 
-Authz::buildPermissionKeyUsing(function (string $subject, string $action): string {
+FilamentAuthz::buildPermissionKeyUsing(function (string $subject, string $action): string {
     return strtolower($subject) . ':' . strtolower($action);
 });
 
-// Now: Authz::buildPermissionKey('Order', 'Delete') returns 'order:delete'
+// Now: FilamentAuthz::buildPermissionKey('Order', 'Delete') returns 'order:delete'
 ```
 
 ## Wildcard Permissions

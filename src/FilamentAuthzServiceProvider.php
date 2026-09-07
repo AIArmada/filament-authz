@@ -30,7 +30,7 @@ class FilamentAuthzServiceProvider extends ServiceProvider
             SeederCommand::class,
         ]);
 
-        $this->app->singleton(FilamentAuthzPlugin::class);
+        $this->app->scoped(FilamentAuthzPlugin::class);
         $this->app->singleton(EntityDiscoveryService::class);
         $this->app->scoped(Authz::class, function ($app): Authz {
             return new Authz($app->make(PermissionKeyBuilder::class));

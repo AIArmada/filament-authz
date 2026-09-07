@@ -187,14 +187,14 @@ Use Authz scopes to attach roles/permissions to any model (institutions, speaker
 
 ```php
 use AIArmada\Authz\Concerns\HasAuthzScope;
-use AIArmada\FilamentAuthz\Facades\Authz;
+use AIArmada\FilamentAuthz\Facades\FilamentAuthz;
 
 class Workspace extends Model
 {
     use HasAuthzScope;
 }
 
-Authz::userCanInScope($user, 'project.update', $workspace);
+FilamentAuthz::userCanInScope($user, 'project.update', $workspace);
 ```
 
 ### Limiting Role Scope Options

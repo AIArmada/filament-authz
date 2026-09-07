@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace AIArmada\FilamentAuthz\Forms\Components;
 
-use AIArmada\FilamentAuthz\Facades\Authz;
+use AIArmada\FilamentAuthz\Facades\FilamentAuthz;
 use AIArmada\FilamentAuthz\FilamentAuthzPlugin;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
@@ -68,7 +68,7 @@ final class PermissionTabFactory
 
     protected static function getResourcesTab(): Tab
     {
-        $resources = Authz::getResources();
+        $resources = FilamentAuthz::getResources();
         $count = $resources->sum(fn (array $r): int => count($r['permissions']));
         $plugin = static::getPlugin();
 
@@ -173,7 +173,7 @@ final class PermissionTabFactory
 
     protected static function getPagesTab(): Tab
     {
-        $pages = Authz::getPages();
+        $pages = FilamentAuthz::getPages();
         $plugin = static::getPlugin();
 
         $checkboxColumns = $plugin?->getCheckboxListColumns()
@@ -244,7 +244,7 @@ final class PermissionTabFactory
 
     protected static function getWidgetsTab(): Tab
     {
-        $widgets = Authz::getWidgets();
+        $widgets = FilamentAuthz::getWidgets();
         $plugin = static::getPlugin();
 
         $checkboxColumns = $plugin?->getCheckboxListColumns()
@@ -315,7 +315,7 @@ final class PermissionTabFactory
 
     protected static function getCustomPermissionsTab(): Tab
     {
-        $custom = Authz::getCustomPermissions();
+        $custom = FilamentAuthz::getCustomPermissions();
         $plugin = static::getPlugin();
 
         $checkboxColumns = $plugin?->getCheckboxListColumns()
@@ -346,7 +346,7 @@ final class PermissionTabFactory
 
     protected static function getPanelsTab(): Tab
     {
-        $panels = Authz::getPanels();
+        $panels = FilamentAuthz::getPanels();
         $plugin = static::getPlugin();
 
         $checkboxColumns = $plugin?->getCheckboxListColumns()
@@ -439,31 +439,31 @@ final class PermissionTabFactory
     public static function getDiscoveredPermissionNames(): array
     {
         /** @var list<string> $resourcePermissions */
-        $resourcePermissions = Authz::getResources()
+        $resourcePermissions = FilamentAuthz::getResources()
             ->flatMap(static fn (array $resource): array => array_keys($resource['permissions'] ?? []))
             ->map(static fn (mixed $name): string => (string) $name)
             ->all();
 
         /** @var list<string> $pagePermissions */
-        $pagePermissions = Authz::getPages()
+        $pagePermissions = FilamentAuthz::getPages()
             ->pluck('permission')
             ->map(static fn (mixed $name): string => (string) $name)
             ->all();
 
         /** @var list<string> $widgetPermissions */
-        $widgetPermissions = Authz::getWidgets()
+        $widgetPermissions = FilamentAuthz::getWidgets()
             ->pluck('permission')
             ->map(static fn (mixed $name): string => (string) $name)
             ->all();
 
         /** @var list<string> $panelPermissions */
-        $panelPermissions = Authz::getPanels()
+        $panelPermissions = FilamentAuthz::getPanels()
             ->pluck('permission')
             ->map(static fn (mixed $name): string => (string) $name)
             ->all();
 
         /** @var list<string> $customPermissions */
-        $customPermissions = array_map('strval', array_keys(Authz::getCustomPermissions()));
+        $customPermissions = array_map('strval', array_keys(FilamentAuthz::getCustomPermissions()));
 
         return Collection::make([
             ...$resourcePermissions,

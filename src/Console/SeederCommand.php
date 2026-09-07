@@ -7,7 +7,7 @@ namespace AIArmada\FilamentAuthz\Console;
 use AIArmada\Authz\Console\Concerns\Prohibitable;
 use AIArmada\Authz\Models\Permission;
 use AIArmada\Authz\Models\Role;
-use AIArmada\FilamentAuthz\Facades\Authz;
+use AIArmada\FilamentAuthz\Facades\FilamentAuthz;
 use Filament\Facades\Filament;
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
@@ -113,7 +113,7 @@ class SeederCommand extends Command
             Filament::setCurrentPanel($panel);
 
             $guards = (array) config('authz.guards', ['web']);
-            $permissions = Authz::getAllPermissions($panel);
+            $permissions = FilamentAuthz::getAllPermissions($panel);
 
             foreach ($permissions as $permission) {
                 foreach ($guards as $guard) {

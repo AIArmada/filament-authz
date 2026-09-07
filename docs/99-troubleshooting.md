@@ -15,9 +15,9 @@ php artisan permission:cache-reset
 If you're using the Authz discovery cache, clear it programmatically:
 
 ```php
-use AIArmada\FilamentAuthz\Facades\Authz;
+use AIArmada\FilamentAuthz\Facades\FilamentAuthz;
 
-Authz::clearCache();
+FilamentAuthz::clearCache();
 ```
 
 ## Entity Not Showing in Role Management
@@ -147,7 +147,7 @@ When using multiple panels with different configurations:
 
 ## Octane Compatibility
 
-The package is Laravel Octane compatible. It clears permission and discovery caches on Octane `RequestReceived` so each request starts from a fresh authorization cache state.
+The package is Laravel Octane compatible. Its discovery service and plugin are request-scoped, and permission and discovery caches are cleared on Octane `RequestReceived` and `RequestTerminated` so each request starts from a fresh authorization cache state.
 
 If you encounter stale data in Octane:
 
@@ -155,7 +155,7 @@ If you encounter stale data in Octane:
 2. **Clear caches manually** in testing:
    ```php
    app(PermissionRegistrar::class)->forgetCachedPermissions();
-   Authz::clearCache();
+   FilamentAuthz::clearCache();
    ```
 
 ## Permission Cache Not Clearing After User Updates
@@ -203,11 +203,11 @@ The `authz` core package ships the `CommandProhibitor` helper. If your applicati
    // AuthzScopeTeamResolver when authz.scopes.enabled = true
    // OwnerContextTeamResolver when using commerce-support + teams
    ```
-   For Filament tenancy, register `SyncAuthzTenant` in tenant middleware. For Authz Scopes, use `Authz::withScope()` to set scope explicitly.
+   For Filament tenancy, register `SyncAuthzTenant` in tenant middleware. For Authz Scopes, use the core Authz facade's `withScope()` method to set scope explicitly.
 
 ## AuthorizationException When Saving User Roles
 
 If you see `One or more selected roles are outside the current tenant scope`, a role ID was submitted that does not belong to the active team. This is a server-side security guard in `UserAuthzForm`.
 
-- Verify the active team context is set before the form saves (check your `SyncAuthzTenant` middleware or `Authz::withScope()` call).
+- Verify the active team context is set before the form saves (check your `SyncAuthzTenant` middleware or the core Authz facade's `withScope()` call).
 - If you intentionally manage roles across tenants (e.g., a super-admin panel), set `'central_app' => true` in `config/filament-authz.php` to disable the restriction.

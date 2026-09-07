@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AIArmada\FilamentAuthz\Facades;
 
+use AIArmada\FilamentAuthz\Authz;
 use Illuminate\Support\Facades\Facade;
 
 /**
@@ -18,10 +19,10 @@ use Illuminate\Support\Facades\Facade;
  * @method static array getCustomPermissions()
  * @method static string buildPermissionKey(string $subject, string $action)
  */
-class Authz extends Facade
+class FilamentAuthz extends Facade
 {
     protected static function getFacadeAccessor(): string
     {
-        return \AIArmada\FilamentAuthz\Authz::class;
+        return Authz::class;
     }
 }

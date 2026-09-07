@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace AIArmada\FilamentAuthz\Console;
 
 use AIArmada\Authz\Console\Concerns\Prohibitable;
-use AIArmada\FilamentAuthz\Facades\Authz;
+use AIArmada\FilamentAuthz\Facades\FilamentAuthz;
 use Filament\Facades\Filament;
 use Filament\Panel;
 use Illuminate\Console\Command;
@@ -137,7 +137,7 @@ class GeneratePoliciesCommand extends Command
      */
     protected function getTargetResources(Panel $panel): Collection
     {
-        $resources = Authz::getResources($panel);
+        $resources = FilamentAuthz::getResources($panel);
         $targetNames = $this->option('resource');
 
         if (empty($targetNames)) {
@@ -200,6 +200,10 @@ class GeneratePoliciesCommand extends Command
      */
     public function {$methodName}({$userModel} \$user, {$modelBasename} \${$modelVariable}): bool
     {
+        if (! \$this->isRecordInCurrentOwnerScope(\${$modelVariable})) {
+            return false;
+        }
+
         return \$user->can('{$permission}');
     }
 PHP;
@@ -230,11 +234,35 @@ namespace {{ namespace }};
 
 use {{ userModel }};
 use {{ model }};
+use AIArmada\CommerceSupport\Exceptions\NoCurrentOwnerException;
+use AIArmada\CommerceSupport\Support\OwnerWriteGuard;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Database\Eloquent\Model;
+use InvalidArgumentException;
 
 class {{ class }}
 {
     use HandlesAuthorization;
+
+    private function isRecordInCurrentOwnerScope(Model $model): bool
+    {
+        if (method_exists($model, 'ownerScopeConfig') && ! $model::ownerScopeConfig()->enabled) {
+            return true;
+        }
+
+        if (! method_exists($model, 'scopeForOwner')) {
+            return true;
+        }
+
+        try {
+            OwnerWriteGuard::findOrFailForOwner($model::class, $model->getKey());
+        } catch (AuthorizationException|InvalidArgumentException|NoCurrentOwnerException) {
+            return false;
+        }
+
+        return true;
+    }
 
 {{ methods }}
 }

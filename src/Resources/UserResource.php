@@ -6,7 +6,7 @@ namespace AIArmada\FilamentAuthz\Resources;
 
 use AIArmada\Authz\Support\ImpersonationScopeGuard;
 use AIArmada\Authz\Support\UserRoleChecker;
-use AIArmada\FilamentAuthz\Facades\Authz;
+use AIArmada\FilamentAuthz\Facades\FilamentAuthz;
 use AIArmada\FilamentAuthz\Resources\UserResource\Pages;
 use AIArmada\FilamentAuthz\Support\UserAuthzForm;
 use AIArmada\FilamentAuthz\Tables\Actions\ImpersonateTableAction;
@@ -107,7 +107,7 @@ class UserResource extends Resource
             return true;
         }
 
-        $ability = Authz::buildPermissionKey('User', $action);
+        $ability = FilamentAuthz::buildPermissionKey('User', $action);
 
         return $user->can($ability);
     }
