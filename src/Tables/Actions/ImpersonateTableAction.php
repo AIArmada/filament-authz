@@ -7,6 +7,7 @@ namespace AIArmada\FilamentAuthz\Tables\Actions;
 use AIArmada\Authz\Services\ImpersonateManager;
 use AIArmada\Authz\Support\ImpersonationScopeGuard;
 use AIArmada\Authz\Support\UserRoleChecker;
+use AIArmada\FilamentAuthz\Support\ImpersonationActorAuth;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Select;
@@ -110,16 +111,18 @@ class ImpersonateTableAction extends Action
             return false;
         }
 
-        // Scope check must run regardless of canImpersonate() — they are orthogonal.
         if (! $record instanceof Authenticatable) {
             return false;
         }
 
-        if (! ImpersonationScopeGuard::canAccessTarget($record)) {
+        // Actor authorization is memoized per request; run it before the
+        // per-target scope query so unauthorized actors skip that query.
+        if (! $this->isActorAuthorizedToImpersonate($currentUser)) {
             return false;
         }
 
-        return $this->isActorAuthorizedToImpersonate($currentUser);
+        // Scope check must run regardless of canImpersonate() — they are orthogonal.
+        return ImpersonationScopeGuard::canAccessTarget($record);
     }
 
     /**
@@ -128,17 +131,19 @@ class ImpersonateTableAction extends Action
      */
     private function isActorAuthorizedToImpersonate(Authenticatable $actor): bool
     {
-        if (method_exists($actor, 'canImpersonate') && $actor->canImpersonate()) {
-            return true;
-        }
+        return app(ImpersonationActorAuth::class)->isAuthorized($actor, function () use ($actor): bool {
+            if (method_exists($actor, 'canImpersonate') && $actor->canImpersonate()) {
+                return true;
+            }
 
-        $superAdminRole = config('authz.super_admin_role');
+            $superAdminRole = config('authz.super_admin_role');
 
-        if ($superAdminRole) {
-            return UserRoleChecker::hasGlobalRole($actor, $superAdminRole);
-        }
+            if ($superAdminRole) {
+                return UserRoleChecker::hasGlobalRole($actor, $superAdminRole);
+            }
 
-        return false;
+            return false;
+        });
     }
 
     /**

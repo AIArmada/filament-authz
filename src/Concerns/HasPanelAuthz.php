@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AIArmada\FilamentAuthz\Concerns;
 
 use AIArmada\Authz\Support\UserRoleChecker;
+use AIArmada\FilamentAuthz\Authz;
 use Filament\Panel;
 
 /**
@@ -30,7 +31,8 @@ trait HasPanelAuthz
             return true;
         }
 
-        $panelPermission = 'panel.' . $panel->getId();
+        $prefix = (string) config('filament-authz.panels.prefix', 'panel');
+        $panelPermission = app(Authz::class)->buildPermissionKey($prefix, $panel->getId());
 
         return $this->can($panelPermission);
     }

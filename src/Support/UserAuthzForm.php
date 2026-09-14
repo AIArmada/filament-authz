@@ -71,22 +71,53 @@ final class UserAuthzForm
             ->preload()
             ->helperText('Assign specific permissions directly. Use roles for standard access control.')
             ->saveRelationshipsUsing(function (Model $record, array $state): void {
-                if (! method_exists($record, 'permissions')) {
-                    return;
-                }
-
-                $relation = $record->permissions();
-                $teamPayload = static::getTeamPivotPayload();
-
-                if ($teamPayload !== []) {
-                    $relation->syncWithPivotValues($state, $teamPayload);
-                } else {
-                    $relation->sync($state);
-                }
-
-                // Clear permission cache so changes take effect immediately
-                app(PermissionRegistrar::class)->forgetCachedPermissions();
+                static::syncDirectPermissions($record, $state);
             });
+    }
+
+    protected static function syncDirectPermissions(Model $record, array $state): void
+    {
+        if (! method_exists($record, 'permissions')) {
+            return;
+        }
+
+        $permissionIds = Collection::make($state)
+            ->filter(fn (mixed $permissionId): bool => filled($permissionId))
+            ->map(static fn (mixed $permissionId): string => (string) $permissionId)
+            ->unique()
+            ->values()
+            ->all();
+
+        // Mirror the roles path: reject forged IDs instead of syncing them.
+        // Permission records are global, so existence + guard is the check.
+        if ($permissionIds !== []) {
+            $guards = (array) config('authz.guards', ['web']);
+            $guard = (string) ($guards[0] ?? 'web');
+
+            /** @var class-string<Model> $permissionClass */
+            $permissionClass = app(PermissionRegistrar::class)->getPermissionClass();
+
+            $validCount = $permissionClass::query()
+                ->whereIn('id', $permissionIds)
+                ->where('guard_name', $guard)
+                ->count();
+
+            if ($validCount !== count($permissionIds)) {
+                throw new AuthorizationException('One or more selected permissions are invalid for the current guard.');
+            }
+        }
+
+        $relation = $record->permissions();
+        $teamPayload = static::getTeamPivotPayload();
+
+        if ($teamPayload !== []) {
+            $relation->syncWithPivotValues($permissionIds, $teamPayload);
+        } else {
+            $relation->sync($permissionIds);
+        }
+
+        // Clear permission cache so changes take effect immediately
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
     }
 
     protected static function applyPermissionScope(Builder $query): Builder

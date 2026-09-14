@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AIArmada\FilamentAuthz\Actions;
 
 use AIArmada\Authz\Services\ImpersonateManager;
+use AIArmada\Authz\Support\BackToUrlSanitizer;
 use Filament\Actions\Action;
 use Filament\Navigation\MenuItem;
 
@@ -48,27 +49,7 @@ class LeaveImpersonationAction extends Action
 
     private static function sanitizeBackToUrl(?string $url): string
     {
-        if (! is_string($url) || $url === '') {
-            return '/';
-        }
-
-        if (str_starts_with($url, '/') && ! str_starts_with($url, '//')) {
-            return $url;
-        }
-
-        $parsed = parse_url($url);
-
-        if (! is_array($parsed) || ! isset($parsed['host'])) {
-            return '/';
-        }
-
-        $requestHost = request()->getHost();
-
-        if (mb_strtolower((string) $parsed['host']) !== mb_strtolower($requestHost)) {
-            return '/';
-        }
-
-        return $url;
+        return BackToUrlSanitizer::sanitize($url);
     }
 
     public function asMenuItem(): MenuItem

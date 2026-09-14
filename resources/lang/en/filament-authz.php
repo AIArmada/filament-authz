@@ -225,5 +225,8 @@ return [
         'redirect_helper' => 'Choose where to redirect after impersonating this user.',
         'redirect_frontpage' => 'Frontpage',
         'redirect_panel_suffix' => 'Panel',
+        'started_message' => 'You are now impersonating :name.',
+        'failed_title' => 'Impersonation failed',
+        'failed_message' => 'Unable to start impersonation. Please try again.',
     ],
 ];

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AIArmada\FilamentAuthz\Http\Controllers;
 
 use AIArmada\Authz\Services\ImpersonateManager;
+use AIArmada\Authz\Support\BackToUrlSanitizer;
 use AIArmada\Authz\Support\ImpersonationScopeGuard;
 use AIArmada\Authz\Support\UserRoleChecker;
 use Filament\Facades\Filament;
@@ -27,6 +28,13 @@ class ImpersonateController
 
         if (app(ImpersonateManager::class)->isImpersonating()) {
             abort(403, 'Already impersonating');
+        }
+
+        // Authorize the actor before resolving the target so unauthenticated
+        // or unauthorized callers cannot use 404-vs-403 responses as a
+        // user-existence oracle.
+        if (! self::isAuthorizedImpersonator($currentUser)) {
+            abort(403, 'Not authorized to impersonate users');
         }
 
         /** @var class-string<Model&Authenticatable> $userModelClass */
@@ -54,23 +62,7 @@ class ImpersonateController
             abort(403, 'This user cannot be impersonated');
         }
 
-        $isAuthorizedImpersonator = false;
-
-        if (method_exists($currentUser, 'canImpersonate')) {
-            $isAuthorizedImpersonator = (bool) $currentUser->canImpersonate();
-        } else {
-            $superAdminRole = (string) config('authz.super_admin_role', '');
-
-            if ($superAdminRole !== '') {
-                $isAuthorizedImpersonator = UserRoleChecker::hasGlobalRole($currentUser, $superAdminRole);
-            }
-        }
-
-        if (! $isAuthorizedImpersonator) {
-            abort(403, 'Not authorized to impersonate users');
-        }
-
-        $backTo = self::sanitizeBackToUrl(request()->header('referer') ?? Filament::getUrl());
+        $backTo = BackToUrlSanitizer::sanitize(request()->header('referer') ?? Filament::getUrl());
         $impersonateManager = app(ImpersonateManager::class);
 
         if (! $impersonateManager->take($currentUser, $targetUser, $guard, $backTo)) {
@@ -81,6 +73,21 @@ class ImpersonateController
 
         // Redirect to the selected destination (with the new session/CSRF token)
         return redirect($redirectTo)->with('status', __('filament-authz::filament-authz.impersonate.started_message', ['name' => $targetUser->name ?? $targetUser->email ?? 'User']));
+    }
+
+    private static function isAuthorizedImpersonator(Authenticatable $actor): bool
+    {
+        if (method_exists($actor, 'canImpersonate')) {
+            return (bool) $actor->canImpersonate();
+        }
+
+        $superAdminRole = (string) config('authz.super_admin_role', '');
+
+        if ($superAdminRole === '') {
+            return false;
+        }
+
+        return UserRoleChecker::hasGlobalRole($actor, $superAdminRole);
     }
 
     /**
@@ -139,33 +146,5 @@ class ImpersonateController
         }
 
         return array_values(array_unique($paths));
-    }
-
-    /**
-     * Sanitize the back-to URL to prevent open redirect via a controlled Referer header.
-     *
-     * Accepts relative paths and absolute same-host URLs only.
-     */
-    private static function sanitizeBackToUrl(string $url): string
-    {
-        if ($url === '') {
-            return '/';
-        }
-
-        if (str_starts_with($url, '/') && ! str_starts_with($url, '//')) {
-            return $url;
-        }
-
-        $parsed = parse_url($url);
-
-        if (! is_array($parsed) || ! isset($parsed['host'])) {
-            return '/';
-        }
-
-        if (mb_strtolower($parsed['host']) !== mb_strtolower(request()->getHost())) {
-            return '/';
-        }
-
-        return $url;
     }
 }

@@ -56,6 +56,13 @@ class GeneratePoliciesCommand extends Command
         }
 
         $panel = Filament::getPanel($panelId);
+
+        if ($panel === null) {
+            warning("Panel '{$panelId}' not found.");
+
+            return self::FAILURE;
+        }
+
         Filament::setCurrentPanel($panel);
 
         $resources = $this->getTargetResources($panel);
@@ -193,6 +200,10 @@ class GeneratePoliciesCommand extends Command
 
             $needsModel = in_array($methodName, ['view', 'update', 'delete', 'restore', 'forceDelete', 'replicate'], true);
 
+            // Permission names are discovery-derived but can contain quotes;
+            // var_export() keeps the generated string literal valid PHP.
+            $permissionLiteral = var_export($permission, true);
+
             if ($needsModel) {
                 $methods[] = <<<PHP
     /**
@@ -204,7 +215,7 @@ class GeneratePoliciesCommand extends Command
             return false;
         }
 
-        return \$user->can('{$permission}');
+        return \$user->can({$permissionLiteral});
     }
 PHP;
             } else {
@@ -214,7 +225,7 @@ PHP;
      */
     public function {$methodName}({$userModel} \$user): bool
     {
-        return \$user->can('{$permission}');
+        return \$user->can({$permissionLiteral});
     }
 PHP;
             }

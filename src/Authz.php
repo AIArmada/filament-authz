@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AIArmada\FilamentAuthz;
 
 use AIArmada\Authz\Authz as BaseAuthz;
+use AIArmada\FilamentAuthz\Support\PanelExclusions;
 use Filament\Facades\Filament;
 use Filament\Pages\Page;
 use Filament\Panel;
@@ -149,7 +150,7 @@ class Authz extends BaseAuthz
 
     protected function transformPanels(): Collection
     {
-        $excluded = (array) config('filament-authz.panels.exclude', []);
+        $excluded = PanelExclusions::resolve(null, 'panels');
         $prefix = (string) config('filament-authz.panels.prefix', 'panel');
 
         return collect(Filament::getPanels())
@@ -173,7 +174,7 @@ class Authz extends BaseAuthz
             return collect();
         }
 
-        $excluded = (array) config('filament-authz.resources.exclude', []);
+        $excluded = PanelExclusions::resolve($panel, 'resources');
 
         $resources = collect($panel->getResources())
             ->filter(fn (string $resource): bool => ! in_array($resource, $excluded, true))
@@ -212,7 +213,7 @@ class Authz extends BaseAuthz
             return collect();
         }
 
-        $excluded = (array) config('filament-authz.pages.exclude', []);
+        $excluded = PanelExclusions::resolve($panel, 'pages');
         $prefix = (string) config('filament-authz.pages.prefix', 'page');
 
         return collect($panel->getPages())
@@ -238,7 +239,7 @@ class Authz extends BaseAuthz
             return collect();
         }
 
-        $excluded = (array) config('filament-authz.widgets.exclude', []);
+        $excluded = PanelExclusions::resolve($panel, 'widgets');
         $prefix = (string) config('filament-authz.widgets.prefix', 'widget');
 
         return collect($panel->getWidgets())

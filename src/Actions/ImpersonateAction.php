@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace AIArmada\FilamentAuthz\Actions;
 
 use AIArmada\Authz\Services\ImpersonateManager;
+use AIArmada\Authz\Support\BackToUrlSanitizer;
 use AIArmada\Authz\Support\ImpersonationScopeGuard;
 use AIArmada\Authz\Support\UserRoleChecker;
+use AIArmada\FilamentAuthz\Support\ImpersonationActorAuth;
 use Closure;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
+use Filament\Notifications\Notification;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 
@@ -100,12 +103,14 @@ class ImpersonateAction extends Action
             return false;
         }
 
-        // Scope check is orthogonal to actor authorization — always run it.
-        if (! ImpersonationScopeGuard::canAccessTarget($targetUser)) {
+        // Actor authorization is memoized per request; run it before the
+        // per-target scope query so unauthorized actors skip that query.
+        if (! $this->isActorAuthorizedToImpersonate($currentUser)) {
             return false;
         }
 
-        return $this->isActorAuthorizedToImpersonate($currentUser);
+        // Scope check is orthogonal to actor authorization — always run it.
+        return ImpersonationScopeGuard::canAccessTarget($targetUser);
     }
 
     /**
@@ -114,20 +119,28 @@ class ImpersonateAction extends Action
      */
     private function isActorAuthorizedToImpersonate(Authenticatable $actor): bool
     {
-        if (method_exists($actor, 'canImpersonate') && $actor->canImpersonate()) {
-            return true;
-        }
+        return app(ImpersonationActorAuth::class)->isAuthorized($actor, function () use ($actor): bool {
+            if (method_exists($actor, 'canImpersonate') && $actor->canImpersonate()) {
+                return true;
+            }
 
-        $superAdminRole = config('authz.super_admin_role');
+            $superAdminRole = config('authz.super_admin_role');
 
-        if ($superAdminRole) {
-            return UserRoleChecker::hasGlobalRole($actor, $superAdminRole);
-        }
+            if ($superAdminRole) {
+                return UserRoleChecker::hasGlobalRole($actor, $superAdminRole);
+            }
 
-        return false;
+            return false;
+        });
     }
 
-    protected function impersonate(): void
+    /**
+     * Impersonate the target user.
+     *
+     * Returns true to signal to Filament that the action completed successfully
+     * and should not continue processing (which would trigger another Livewire request).
+     */
+    protected function impersonate(): bool
     {
         $currentUser = Filament::auth()->user();
         $targetUser = $this->getTargetUser();
@@ -135,28 +148,51 @@ class ImpersonateAction extends Action
         $manager = app(ImpersonateManager::class);
 
         if ($currentUser === null || $targetUser === null) {
-            return;
+            return false;
         }
 
         if (! $targetUser instanceof Authenticatable) {
-            return;
+            return false;
         }
 
         if (method_exists($targetUser, 'canBeImpersonated') && ! $targetUser->canBeImpersonated()) {
-            return;
+            return false;
         }
 
         if (! ImpersonationScopeGuard::canAccessTarget($targetUser)) {
-            return;
+            return false;
         }
 
         // Re-validate actor authorization in the execution path (defense-in-depth).
         if (! $this->isActorAuthorizedToImpersonate($currentUser)) {
-            return;
+            return false;
+        }
+
+        if ($manager->isImpersonating()) {
+            return false;
         }
 
         $backTo = request()->header('referer') ?? Filament::getUrl();
 
-        $manager->take($currentUser, $targetUser, $guard, $backTo);
+        if (! $manager->take($currentUser, $targetUser, $guard, $backTo)) {
+            $this->notifyImpersonationFailed();
+
+            return false;
+        }
+
+        // take() rotates the session id and CSRF token, so a full redirect is
+        // required — otherwise subsequent Livewire requests fail with a 419.
+        $this->redirect(BackToUrlSanitizer::sanitize($backTo), navigate: false);
+
+        return true;
+    }
+
+    private function notifyImpersonationFailed(): void
+    {
+        Notification::make()
+            ->danger()
+            ->title(__('filament-authz::filament-authz.impersonate.failed_title'))
+            ->body(__('filament-authz::filament-authz.impersonate.failed_message'))
+            ->send();
     }
 }

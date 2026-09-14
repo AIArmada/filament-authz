@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AIArmada\FilamentAuthz\Resources\RoleResource\Schemas;
 
 use AIArmada\Authz\Models\AuthzScope;
+use AIArmada\FilamentAuthz\FilamentAuthzPlugin;
 use Closure;
 use Filament\Forms;
 use Filament\Schemas\Components\Section;
@@ -72,6 +73,8 @@ final class RoleForm
                 ->searchable()
                 ->preload()
                 ->nullable()
+                ->exists(table: (new AuthzScope)->getTable(), column: 'id')
+                ->in(static fn (): ?array => ($configured = self::getConfiguredScopeOptions()) === null ? null : array_keys($configured))
                 ->helperText(__('filament-authz::filament-authz.form.scope_helper'));
         }
 
@@ -108,6 +111,12 @@ final class RoleForm
      */
     protected static function getConfiguredScopeOptions(): ?array
     {
+        $override = FilamentAuthzPlugin::resolveForPanel()?->getRoleScopeOptions();
+
+        if ($override !== null) {
+            return $override;
+        }
+
         $configured = config('filament-authz.role_resource.scope_options');
 
         if ($configured instanceof Closure) {

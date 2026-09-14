@@ -23,6 +23,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 
 class UserResource extends Resource
 {
@@ -220,6 +221,7 @@ class UserResource extends Resource
                     ->maxLength(255),
                 'password' => Forms\Components\TextInput::make('password')
                     ->password()
+                    ->rule(Password::defaults())
                     ->dehydrateStateUsing(function (?string $state): ?string {
                         if ($state === null || $state === '') {
                             return null;

@@ -19,7 +19,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Spatie\Permission\PermissionRegistrar;
-use Throwable;
 
 final class PermissionTabFactory
 {
@@ -39,23 +38,23 @@ final class PermissionTabFactory
         $tabs = [];
         $plugin = static::getPlugin();
 
-        if ($plugin?->shouldShowResourcesTab() ?? config('filament-authz.role_resource.tabs.resources', true)) {
+        if ($plugin?->getResourcesTabOverride() ?? config('filament-authz.role_resource.tabs.resources', true)) {
             $tabs[] = static::getResourcesTab();
         }
 
-        if ($plugin?->shouldShowPagesTab() ?? config('filament-authz.role_resource.tabs.pages', true)) {
+        if ($plugin?->getPagesTabOverride() ?? config('filament-authz.role_resource.tabs.pages', true)) {
             $tabs[] = static::getPagesTab();
         }
 
-        if ($plugin?->shouldShowWidgetsTab() ?? config('filament-authz.role_resource.tabs.widgets', true)) {
+        if ($plugin?->getWidgetsTabOverride() ?? config('filament-authz.role_resource.tabs.widgets', true)) {
             $tabs[] = static::getWidgetsTab();
         }
 
-        if ($plugin?->shouldShowCustomPermissionsTab() ?? config('filament-authz.role_resource.tabs.custom_permissions', true)) {
+        if ($plugin?->getCustomPermissionsTabOverride() ?? config('filament-authz.role_resource.tabs.custom_permissions', true)) {
             $tabs[] = static::getCustomPermissionsTab();
         }
 
-        if ($plugin?->shouldShowPanelsTab() ?? config('filament-authz.role_resource.tabs.panels', true)) {
+        if ($plugin?->getPanelsTabOverride() ?? config('filament-authz.role_resource.tabs.panels', true)) {
             $tabs[] = static::getPanelsTab();
         }
 
@@ -108,7 +107,7 @@ final class PermissionTabFactory
             $permissionCount = $resources->sum(fn (array $r): int => count($r['permissions']));
             $resourceCount = $resources->count();
             $searchableLabels = $resources->map(fn (array $r): string => Str::lower(static::normalizeLabel($r['label'])))->values()->all();
-            $searchTerms = implode('|', $searchableLabels);
+            $searchTerms = static::escapeForVisibleJs(implode('|', $searchableLabels));
 
             $sections[] = Section::make($packageName)
                 ->description(trans_choice('filament-authz::filament-authz.section.resources_count', $resourceCount, ['count' => $resourceCount]))
@@ -125,7 +124,7 @@ final class PermissionTabFactory
                                 ->values()
                                 ->all()
                         )
-                        ->columns($plugin?->getGridColumns() ?? config('filament-authz.role_resource.grid_columns', 2)),
+                        ->columns($plugin?->getGridColumnsOverride() ?? config('filament-authz.role_resource.grid_columns', 2)),
                 ]);
         }
 
@@ -142,14 +141,14 @@ final class PermissionTabFactory
         $label = $resource['label'];
         $displayLabel = static::normalizeLabel($label);
 
-        $checkboxColumns = $plugin?->getResourceCheckboxListColumns()
-            ?? $plugin?->getCheckboxListColumns()
+        $checkboxColumns = $plugin?->getResourceCheckboxListColumnsOverride()
+            ?? $plugin?->getCheckboxListColumnsOverride()
             ?? config('filament-authz.role_resource.checkbox_columns', 3);
 
-        $sectionColumnSpan = $plugin?->getSectionColumnSpan()
+        $sectionColumnSpan = $plugin?->getSectionColumnSpanOverride()
             ?? config('filament-authz.role_resource.section_column_span', 1);
 
-        $lowerLabel = Str::lower($displayLabel);
+        $lowerLabel = static::escapeForVisibleJs(Str::lower($displayLabel));
         $safeKey = 'permissions_resource_' . md5($resource['class']);
 
         return Section::make($displayLabel)
@@ -176,7 +175,7 @@ final class PermissionTabFactory
         $pages = FilamentAuthz::getPages();
         $plugin = static::getPlugin();
 
-        $checkboxColumns = $plugin?->getCheckboxListColumns()
+        $checkboxColumns = $plugin?->getCheckboxListColumnsOverride()
             ?? config('filament-authz.role_resource.checkbox_columns', 3);
 
         $grouped = static::groupByPackage($pages);
@@ -212,7 +211,7 @@ final class PermissionTabFactory
         $sections = [];
 
         foreach ($grouped as $packageName => $pages) {
-            $searchTerms = $pages->pluck('label')->map(fn (string $l): string => Str::lower($l))->implode('|');
+            $searchTerms = static::escapeForVisibleJs($pages->pluck('label')->map(fn (string $l): string => Str::lower($l))->implode('|'));
             $safeKey = 'permissions_pages_' . md5($packageName);
 
             $sections[] = Section::make($packageName)
@@ -247,7 +246,7 @@ final class PermissionTabFactory
         $widgets = FilamentAuthz::getWidgets();
         $plugin = static::getPlugin();
 
-        $checkboxColumns = $plugin?->getCheckboxListColumns()
+        $checkboxColumns = $plugin?->getCheckboxListColumnsOverride()
             ?? config('filament-authz.role_resource.checkbox_columns', 3);
 
         $grouped = static::groupByPackage($widgets);
@@ -283,7 +282,7 @@ final class PermissionTabFactory
         $sections = [];
 
         foreach ($grouped as $packageName => $widgets) {
-            $searchTerms = $widgets->pluck('label')->map(fn (string $l): string => Str::lower($l))->implode('|');
+            $searchTerms = static::escapeForVisibleJs($widgets->pluck('label')->map(fn (string $l): string => Str::lower($l))->implode('|'));
             $safeKey = 'permissions_widgets_' . md5($packageName);
 
             $sections[] = Section::make($packageName)
@@ -318,7 +317,7 @@ final class PermissionTabFactory
         $custom = FilamentAuthz::getCustomPermissions();
         $plugin = static::getPlugin();
 
-        $checkboxColumns = $plugin?->getCheckboxListColumns()
+        $checkboxColumns = $plugin?->getCheckboxListColumnsOverride()
             ?? config('filament-authz.role_resource.checkbox_columns', 3);
 
         return Tab::make('custom')
@@ -349,7 +348,7 @@ final class PermissionTabFactory
         $panels = FilamentAuthz::getPanels();
         $plugin = static::getPlugin();
 
-        $checkboxColumns = $plugin?->getCheckboxListColumns()
+        $checkboxColumns = $plugin?->getCheckboxListColumnsOverride()
             ?? config('filament-authz.role_resource.checkbox_columns', 3);
 
         return Tab::make('panels')
@@ -403,6 +402,14 @@ final class PermissionTabFactory
     }
 
     /**
+     * Maximum direct-permission options rendered in the role editor. The
+     * checkbox list renders every option into the DOM, so the pluck is
+     * bounded; direct (non-discovered) permissions beyond this indicate a
+     * modeling problem — discovered resource permissions should be used.
+     */
+    public const int MAX_DIRECT_PERMISSION_OPTIONS = 500;
+
+    /**
      * @return array<string, string>
      */
     public static function getDirectPermissionOptions(mixed $guard): array
@@ -418,6 +425,7 @@ final class PermissionTabFactory
         $names = $permissionClass::query()
             ->where('guard_name', $guardName)
             ->orderBy('name')
+            ->limit(self::MAX_DIRECT_PERMISSION_OPTIONS)
             ->pluck('name')
             ->map(static fn (mixed $name): string => (string) $name)
             ->all();
@@ -479,6 +487,9 @@ final class PermissionTabFactory
 
     /**
      * Set permission state from record for edit/view operations.
+     *
+     * Every checkbox section calls this during hydration, so the relation is
+     * loaded once and reused instead of issuing one pluck per section.
      */
     public static function setPermissionStateForRecord(CheckboxList $component, ?Model $record): void
     {
@@ -486,7 +497,12 @@ final class PermissionTabFactory
             return;
         }
 
-        $permissionNames = $record->permissions()->pluck('name')->toArray();
+        if (! $record->relationLoaded('permissions')) {
+            $record->load('permissions');
+        }
+
+        $permissions = $record->getRelationValue('permissions');
+        $permissionNames = $permissions instanceof Collection ? $permissions->pluck('name')->all() : [];
         $validOptions = array_keys($component->getOptions());
         $filteredPermissions = array_values(array_intersect($permissionNames, $validOptions));
         $component->state($filteredPermissions);
@@ -527,6 +543,14 @@ final class PermissionTabFactory
     }
 
     /**
+     * Escape a value interpolated into a single-quoted visibleJs expression.
+     */
+    public static function escapeForVisibleJs(string $value): string
+    {
+        return str_replace(['\\', "'"], ['\\\\', "\\'"], $value);
+    }
+
+    /**
      * Group items by their package namespace.
      *
      * @param  Collection<int, array<string, mixed>>  $items
@@ -561,17 +585,6 @@ final class PermissionTabFactory
 
     protected static function getPlugin(): ?FilamentAuthzPlugin
     {
-        try {
-            $panel = Filament::getCurrentOrDefaultPanel();
-
-            if ($panel === null) {
-                return null;
-            }
-
-            /** @var FilamentAuthzPlugin|null */
-            return $panel->getPlugin(FilamentAuthzPlugin::PLUGIN_ID);
-        } catch (Throwable) {
-            return null;
-        }
+        return FilamentAuthzPlugin::resolveForPanel(Filament::getCurrentOrDefaultPanel());
     }
 }

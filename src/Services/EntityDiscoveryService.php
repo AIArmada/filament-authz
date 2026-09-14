@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AIArmada\FilamentAuthz\Services;
 
 use AIArmada\Authz\Services\PermissionKeyBuilder;
+use AIArmada\FilamentAuthz\Support\PanelExclusions;
 use Filament\Facades\Filament;
 use Filament\Pages\Page;
 use Filament\Panel;
@@ -51,7 +52,7 @@ class EntityDiscoveryService
             return collect();
         }
 
-        $excludedResources = config('filament-authz.resources.exclude', []);
+        $excludedResources = PanelExclusions::resolve($panel, 'resources');
 
         return collect($panel->getResources())
             ->filter(fn (string $resource): bool => ! in_array($resource, $excludedResources, true))
@@ -83,7 +84,7 @@ class EntityDiscoveryService
             return collect();
         }
 
-        $excludedPages = config('filament-authz.pages.exclude', []);
+        $excludedPages = PanelExclusions::resolve($panel, 'pages');
         $prefix = config('filament-authz.pages.prefix', 'page');
 
         return collect($panel->getPages())
@@ -113,7 +114,7 @@ class EntityDiscoveryService
             return collect();
         }
 
-        $excludedWidgets = config('filament-authz.widgets.exclude', []);
+        $excludedWidgets = PanelExclusions::resolve($panel, 'widgets');
         $prefix = config('filament-authz.widgets.prefix', 'widget');
 
         return collect($panel->getWidgets())
@@ -214,7 +215,7 @@ class EntityDiscoveryService
      */
     public function discoverPanels(): Collection
     {
-        $excluded = (array) config('filament-authz.panels.exclude', []);
+        $excluded = PanelExclusions::resolve(null, 'panels');
         $prefix = (string) config('filament-authz.panels.prefix', 'panel');
 
         return collect(Filament::getPanels())

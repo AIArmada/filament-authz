@@ -339,6 +339,8 @@ protected function getHeaderActions(): array
 }
 ```
 
+On success the action performs a full redirect (impersonation rotates the session id and CSRF token, so staying on the page would break subsequent requests with a 419). If impersonation cannot start, a danger notification is shown instead.
+
 ### Leave Impersonation
 
 While impersonating, a banner appears at the top of the page. Users can leave by:

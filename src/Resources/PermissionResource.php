@@ -26,6 +26,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema as SchemaFacade;
 use Illuminate\Support\HtmlString;
 use Spatie\Permission\PermissionRegistrar;
 
@@ -251,10 +252,10 @@ class PermissionResource extends Resource
             return '-';
         }
 
+        $usersQuery = static::scopedDirectUsersQuery($record)->limit(20);
+
         /** @var Collection<int, Model> $users */
-        $users = static::scopedDirectUsersQuery($record)
-            ->limit(20)
-            ->get();
+        $users = $usersQuery->get(static::directUserColumns($usersQuery->getRelated()));
 
         $total = static::scopedDirectUsersQuery($record)->count();
 
@@ -280,6 +281,27 @@ class PermissionResource extends Resource
             ->all();
 
         return static::renderBulletedList($items, $total);
+    }
+
+    /**
+     * Only the displayed attributes are selected so password hashes and other
+     * sensitive columns are never hydrated. Columns are probed because host
+     * user tables are not guaranteed to have name/email attributes.
+     *
+     * @return list<string>
+     */
+    protected static function directUserColumns(Model $related): array
+    {
+        $table = $related->getTable();
+        $columns = ["{$table}.{$related->getKeyName()}"];
+
+        foreach (['name', 'email'] as $attribute) {
+            if (SchemaFacade::hasColumn($table, $attribute)) {
+                $columns[] = "{$table}.{$attribute}";
+            }
+        }
+
+        return $columns;
     }
 
     /**

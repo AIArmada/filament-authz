@@ -14,6 +14,7 @@ use AIArmada\FilamentAuthz\Console\GeneratePoliciesCommand;
 use AIArmada\FilamentAuthz\Console\SeederCommand;
 use AIArmada\FilamentAuthz\Http\Middleware\ImpersonationBannerMiddleware;
 use AIArmada\FilamentAuthz\Services\EntityDiscoveryService;
+use AIArmada\FilamentAuthz\Support\ImpersonationActorAuth;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Octane\Events\RequestReceived;
@@ -31,6 +32,7 @@ class FilamentAuthzServiceProvider extends ServiceProvider
         ]);
 
         $this->app->scoped(FilamentAuthzPlugin::class);
+        $this->app->scoped(ImpersonationActorAuth::class);
         $this->app->singleton(EntityDiscoveryService::class);
         $this->app->scoped(Authz::class, function ($app): Authz {
             return new Authz($app->make(PermissionKeyBuilder::class));

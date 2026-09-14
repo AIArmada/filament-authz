@@ -94,6 +94,8 @@ protected function getHeaderActions(): array
 }
 ```
 
+On success the action performs a full redirect back to the originating page (impersonation rotates the session id and CSRF token, so staying on the page would break subsequent requests with a 419). If impersonation cannot start, a danger notification is shown instead.
+
 ### LeaveImpersonationAction
 
 Returns to the original user. Can be added to user menu:

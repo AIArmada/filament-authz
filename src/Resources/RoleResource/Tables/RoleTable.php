@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AIArmada\FilamentAuthz\Resources\RoleResource\Tables;
 
+use AIArmada\FilamentAuthz\FilamentAuthzPlugin;
 use Closure;
 use Filament\Actions;
 use Filament\Tables\Columns\TextColumn;
@@ -127,6 +128,12 @@ final class RoleTable
      */
     private static function getScopeOptions(): array
     {
+        $override = FilamentAuthzPlugin::resolveForPanel()?->getRoleScopeOptions();
+
+        if ($override !== null) {
+            return $override;
+        }
+
         $configured = config('filament-authz.role_resource.scope_options');
 
         if ($configured instanceof Closure) {

@@ -47,12 +47,12 @@ class SyncAuthzTenant
 
             app(PermissionRegistrar::class)->forgetCachedPermissions();
 
-            $response = $next($request);
-
-            setPermissionsTeamId($previousTeamId);
-            app(PermissionRegistrar::class)->forgetCachedPermissions();
-
-            return $response;
+            try {
+                return $next($request);
+            } finally {
+                setPermissionsTeamId($previousTeamId);
+                app(PermissionRegistrar::class)->forgetCachedPermissions();
+            }
         }
 
         return $next($request);

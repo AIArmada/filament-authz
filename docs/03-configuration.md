@@ -8,7 +8,9 @@ Filament Authz can be configured globally via the config file or per-panel via t
 
 ## Fluent Plugin API
 
-The recommended way to configure the package is within your Panel provider. Plugin settings override config file defaults.
+The recommended way to configure the package is within your Panel provider. Explicit fluent calls override config file defaults; anything you leave unset falls back to the config file.
+
+Each `FilamentAuthzPlugin::make()` call returns an independent instance, so panels never share fluent settings. Discovery exclusions, role-editor tabs, role-editor layout, and role scope options are resolved per panel. Tenant scoping (`scopeToTenant()` / `centralApp()`), navigation, and permission key format stay global: the tenant guard and permission key builder live in authz core and read global config, and navigation must stay config-driven so runtime navigation overrides keep working. See [Multi-Panel Support](05-multi-panel.md).
 
 ```php
 use AIArmada\FilamentAuthz\FilamentAuthzPlugin;

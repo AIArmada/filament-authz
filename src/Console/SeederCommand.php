@@ -110,6 +110,13 @@ class SeederCommand extends Command
 
         if ($panelId !== null) {
             $panel = Filament::getPanel($panelId);
+
+            if ($panel === null) {
+                warning("Panel '{$panelId}' not found.");
+
+                return;
+            }
+
             Filament::setCurrentPanel($panel);
 
             $guards = (array) config('authz.guards', ['web']);
@@ -236,13 +243,14 @@ PHP;
         $code = "        // Create permissions\n";
 
         foreach ($permissions as $guard => $perms) {
-            $code .= "        \$permissions_{$guard} = [\n";
+            $guardLiteral = var_export($guard, true);
+            $code .= "        \$guardPermissions = [\n";
             foreach ($perms as $perm) {
-                $code .= "            '{$perm}',\n";
+                $code .= '            ' . var_export($perm, true) . ",\n";
             }
             $code .= "        ];\n\n";
-            $code .= "        foreach (\$permissions_{$guard} as \$permission) {\n";
-            $code .= "            Permission::findOrCreate(\$permission, '{$guard}');\n";
+            $code .= "        foreach (\$guardPermissions as \$permission) {\n";
+            $code .= "            Permission::findOrCreate(\$permission, {$guardLiteral});\n";
             $code .= "        }\n\n";
         }
 
@@ -264,12 +272,15 @@ PHP;
             $guard = $data['guard'];
             $permissions = $data['permissions'];
 
-            $code .= "        \$role_{$this->sanitizeVariableName($roleName)} = Role::findOrCreate('{$roleName}', '{$guard}');\n";
+            // Role, permission, and guard names are admin-controlled; var_export()
+            // keeps the generated string literals valid PHP. A single reused
+            // variable avoids collisions between sanitized role names.
+            $code .= '        $role = Role::findOrCreate(' . var_export($roleName, true) . ', ' . var_export($guard, true) . ");\n";
 
             if (! empty($permissions)) {
-                $code .= "        \$role_{$this->sanitizeVariableName($roleName)}->syncPermissions([\n";
+                $code .= "        \$role->syncPermissions([\n";
                 foreach ($permissions as $perm) {
-                    $code .= "            '{$perm}',\n";
+                    $code .= '            ' . var_export($perm, true) . ",\n";
                 }
                 $code .= "        ]);\n";
             }
@@ -278,10 +289,5 @@ PHP;
         }
 
         return $code;
-    }
-
-    protected function sanitizeVariableName(string $name): string
-    {
-        return preg_replace('/[^a-zA-Z0-9_]/', '_', $name) ?? $name;
     }
 }

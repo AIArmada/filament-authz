@@ -31,6 +31,23 @@ $panel->plugins([
 ]);
 ```
 
+## Per-Panel vs Global Settings
+
+Each `FilamentAuthzPlugin::make()` call returns an independent instance: one panel's fluent settings never leak into another panel, and anything left unset falls back to the config file.
+
+Per-panel (resolved from the current panel's plugin instance, config as fallback):
+
+- Discovery exclusions (`excludeResources()`, `excludePages()`, `excludeWidgets()`, `excludePanels()`)
+- Role-editor tabs (`resourcesTab()`, `pagesTab()`, `widgetsTab()`, `panelsTab()`, `customPermissionsTab()`)
+- Role-editor layout (`gridColumns()`, `checkboxListColumns()`, `sectionColumnSpan()`, `resourceCheckboxListColumns()`)
+- Role scope options (`roleScopeOptionsUsing()`)
+
+Global (last explicit fluent call wins because the readers are global by design):
+
+- Tenant scoping (`scopeToTenant()`, `centralApp()` and `authz.scopes.enforce`) — the tenant guard lives in authz core and reads global config
+- Navigation (`navigationGroup()`, badges, icons, sort) — resources must read navigation from config so runtime navigation overrides keep working
+- Permission key format (`permissionCase()`, `permissionSeparator()`) — the key builder is shared and permission names are global
+
 ## Discovery Scope
 When a user visits a panel, the `EntityDiscoveryService` only identifies resources, pages, and widgets registered to that specific panel. This ensures that permissions are clean and relevant to the context.
 

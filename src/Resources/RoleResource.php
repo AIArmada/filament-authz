@@ -13,7 +13,6 @@ use AIArmada\FilamentAuthz\Resources\RoleResource\Pages;
 use AIArmada\FilamentAuthz\Resources\RoleResource\Schemas\RoleForm;
 use AIArmada\FilamentAuthz\Resources\RoleResource\Tables\RoleTable;
 use Closure;
-use Filament\Facades\Filament;
 use Filament\Panel;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -24,7 +23,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Spatie\Permission\PermissionRegistrar;
-use Throwable;
 
 class RoleResource extends Resource
 {
@@ -124,21 +122,23 @@ class RoleResource extends Resource
 
     public static function getNavigationIcon(): ?string
     {
-        return static::getPlugin()?->getNavigationIcon()
-            ?? config('filament-authz.navigation.icons.roles');
+        $icon = config('filament-authz.navigation.icons.roles');
+
+        return is_string($icon) ? $icon : null;
     }
 
     public static function getActiveNavigationIcon(): ?string
     {
-        return static::getPlugin()?->getActiveNavigationIcon()
-            ?? config('filament-authz.navigation.icons.roles_active');
+        $icon = config('filament-authz.navigation.icons.roles_active');
+
+        return is_string($icon) ? $icon : null;
     }
 
     public static function getNavigationLabel(): string
     {
-        return static::getPlugin()?->getNavigationLabel()
-            ?? config('filament-authz.navigation.label')
-            ?? __('filament-authz::filament-authz.navigation.roles');
+        $label = config('filament-authz.navigation.label');
+
+        return is_string($label) ? $label : __('filament-authz::filament-authz.navigation.roles');
     }
 
     public static function getNavigationSort(): ?int
@@ -148,8 +148,9 @@ class RoleResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getPlugin()?->getNavigationBadge()
-            ?? config('filament-authz.navigation.badge');
+        $badge = config('filament-authz.navigation.badge');
+
+        return is_string($badge) ? $badge : null;
     }
 
     /**
@@ -157,28 +158,28 @@ class RoleResource extends Resource
      */
     public static function getNavigationBadgeColor(): string | array | null
     {
-        return static::getPlugin()?->getNavigationBadgeColor()
-            ?? config('filament-authz.navigation.badge_color');
+        $color = config('filament-authz.navigation.badge_color');
+
+        return is_string($color) || is_array($color) ? $color : null;
     }
 
     public static function getNavigationParentItem(): ?string
     {
-        return static::getPlugin()?->getNavigationParentItem()
-            ?? config('filament-authz.navigation.parent_item');
+        $parent = config('filament-authz.navigation.parent_item');
+
+        return is_string($parent) ? $parent : null;
     }
 
     public static function getCluster(): ?string
     {
-        return static::getPlugin()?->getCluster()
-            ?? config('filament-authz.navigation.cluster');
+        $cluster = config('filament-authz.navigation.cluster');
+
+        return is_string($cluster) ? $cluster : null;
     }
 
     public static function shouldRegisterNavigation(): bool
     {
-        $shouldRegister = static::getPlugin()?->shouldRegisterNavigation()
-            ?? config('filament-authz.navigation.register', true);
-
-        return (bool) $shouldRegister && static::canViewAny();
+        return (bool) config('filament-authz.navigation.register', true) && static::canViewAny();
     }
 
     public static function getSlug(?Panel $panel = null): string
@@ -218,6 +219,12 @@ class RoleResource extends Resource
      */
     protected static function getConfiguredScopeOptions(): ?array
     {
+        $override = FilamentAuthzPlugin::resolveForPanel()?->getRoleScopeOptions();
+
+        if ($override !== null) {
+            return $override;
+        }
+
         $configured = config('filament-authz.role_resource.scope_options');
 
         if ($configured instanceof Closure) {
@@ -232,21 +239,5 @@ class RoleResource extends Resource
         return collect($configured)
             ->mapWithKeys(static fn (mixed $label, mixed $id): array => [(string) $id => (string) $label])
             ->all();
-    }
-
-    protected static function getPlugin(): ?FilamentAuthzPlugin
-    {
-        try {
-            $panel = Filament::getCurrentOrDefaultPanel();
-
-            if ($panel === null) {
-                return null;
-            }
-
-            /** @var FilamentAuthzPlugin|null */
-            return $panel->getPlugin(FilamentAuthzPlugin::PLUGIN_ID);
-        } catch (Throwable) {
-            return null;
-        }
     }
 }
