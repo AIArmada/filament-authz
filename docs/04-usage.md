@@ -121,11 +121,9 @@ The widget will require the permission `widget.revenueWidget`.
 
 ## Custom Permissions
 
-Define custom permissions beyond resources/pages/widgets in `config/authz.php`
-(core `authz` config, not the adapter config):
+Define custom permissions beyond resources/pages/widgets in `config/authz.php`:
 
 ```php
-// config/authz.php
 'custom_permissions' => [
     'export-reports' => 'Export Reports',
     'view-analytics' => 'View Analytics Dashboard',
@@ -217,14 +215,13 @@ if (auth()->user()->can($key)) {
 Override the default key builder for special cases:
 
 ```php
-use AIArmada\Authz\Facades\Authz;
+use AIArmada\FilamentAuthz\Facades\FilamentAuthz;
 
-// The key builder is owned by authz core, not the adapter.
-Authz::buildPermissionKeyUsing(function (string $subject, string $action): string {
+FilamentAuthz::buildPermissionKeyUsing(function (string $subject, string $action): string {
     return strtolower($subject) . ':' . strtolower($action);
 });
 
-// Now: Authz::buildPermissionKey('Order', 'Delete') returns 'order:delete'
+// Now: FilamentAuthz::buildPermissionKey('Order', 'Delete') returns 'order:delete'
 ```
 
 ## Wildcard Permissions
@@ -256,7 +253,7 @@ Wildcards support multiple patterns:
 Users with the super admin role bypass **all** permission checks:
 
 ```php
-// config/authz.php (core); the adapter has no super_admin_role key
+// config/authz.php
 'super_admin_role' => 'super_admin',
 ```
 
@@ -299,12 +296,12 @@ class User extends Authenticatable
 2. Enable impersonation in config:
 
 ```php
-// config/filament-authz.php — the on/off switch
+// config/filament-authz.php
 'impersonate' => [
     'enabled' => true,
 ],
 
-// config/authz.php — the guard impersonation authenticates against
+// config/authz.php — guard used for impersonation
 'impersonate' => [
     'guard' => 'web',
 ],

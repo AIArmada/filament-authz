@@ -176,8 +176,8 @@ class SettingsPage extends Page
 
 - PHP 8.4+
 - Laravel 13+
-- Filament ^5.8.1
-- Spatie laravel-permission 8.3+
+- Filament 5.0+
+- Spatie laravel-permission 8.0+
 
 ## Architecture
 

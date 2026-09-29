@@ -93,7 +93,7 @@ $panel->plugins([
 | `panelsTab()` | `bool\|Closure` | `true` | Show panels tab |
 | `customPermissionsTab()` | `bool\|Closure` | `true` | Show custom permissions tab |
 | `localizePermissionLabels()` | `bool\|Closure` | `false` | Use lang files for permission labels |
-| `userRoleScopeMode()` | `string\|Closure\|null` | config value (`'all'`) | Limit user role editing: `all`, `global_only`, `scoped_only` |
+| `userRoleScopeMode()` | `string\|Closure\|null` | `null` | Limit user role editing: `all`, `global_only`, `scoped_only` |
 | `roleScopeOptionsUsing()` | `array\|Closure\|null` | `null` | Override selectable Authz scopes in RoleResource |
 | `permissionCase()` | `string\|null` | `'camel'` | Key case format |
 | `permissionSeparator()` | `string\|null` | `'.'` | Key separator |
@@ -229,8 +229,8 @@ Panels registered with Filament are auto-discovered. Each panel generates a perm
 
 ### Custom Permissions
 
-Additional permissions beyond discovered entities. This key lives in `config/authz.php`
-(the Role editor tab itself is toggled by `filament-authz.role_resource.tabs.custom_permissions`).
+Additional permissions beyond discovered entities. Configure them in the core
+`authz.custom_permissions` setting; the role editor reads them from there.
 
 ```php
 // config/authz.php
@@ -316,18 +316,19 @@ Run sync with: `php artisan authz:sync --flush-cache`
 
 ### Impersonation
 
-Impersonation is enabled per adapter in `config/filament-authz.php`; the guard it
-authenticates against is core config.
+Configure user impersonation behavior across both config files:
+
+```php
+// config/authz.php
+'impersonate' => [
+    'guard' => env('AUTHZ_IMPERSONATE_GUARD', 'web'),
+],
+```
 
 ```php
 // config/filament-authz.php
 'impersonate' => [
     'enabled' => true,
-],
-
-// config/authz.php
-'impersonate' => [
-    'guard' => env('AUTHZ_IMPERSONATE_GUARD', 'web'),
 ],
 ```
 

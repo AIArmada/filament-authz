@@ -23,14 +23,10 @@ Filament Authz provides a secure user impersonation feature that allows administ
 'impersonate' => [
     'enabled' => true,
 ],
-```
 
-The authentication guard is configured in the `authz` core package:
-
-```php
 // config/authz.php
 'impersonate' => [
-    'guard' => env('AUTHZ_IMPERSONATE_GUARD', 'web'),
+    'guard' => 'web', // Authentication guard to use
 ],
 ```
 
@@ -59,7 +55,7 @@ public static function table(Table $table): Table
 {
     return $table
         ->columns([...])
-        ->recordActions([
+        ->actions([
             ImpersonateTableAction::make(),
         ]);
 }
@@ -97,7 +93,7 @@ protected function getHeaderActions(): array
 {
     return [
         ImpersonateAction::make()
-            ->record($this->getRecord()),
+            ->record($this->record),
     ];
 }
 ```
@@ -113,31 +109,30 @@ use AIArmada\FilamentAuthz\Actions\LeaveImpersonationAction;
 
 // In Panel configuration
 ->userMenuItems([
-    LeaveImpersonationAction::make()->asMenuItem(),
+    LeaveImpersonationAction::make()
+        ->label('Return to Admin')
+        ->icon('heroicon-o-arrow-left-on-rectangle'),
 ])
 ```
 
 ## Authorization
 
-The `CanBeImpersonated` trait provides two methods for controlling access. Both
-are meant to be overridden on your User model when you need different rules.
+The `CanBeImpersonated` trait provides two methods for controlling access:
 
 ### canBeImpersonated()
 
-The shipped default blocks global super admins and self-impersonation:
+Determines if this user can be impersonated by others:
 
 ```php
 public function canBeImpersonated(): bool
 {
-    $superAdminRole = config('authz.super_admin_role');
-
-    if ($superAdminRole && UserRoleChecker::hasGlobalRole($this, $superAdminRole)) {
+    // Prevent impersonating super admins
+    if ($this->hasRole('super_admin')) {
         return false;
     }
 
-    $currentUser = Filament::auth()->user();
-
-    if ($currentUser !== null && $currentUser->getAuthIdentifier() === $this->getAuthIdentifier()) {
+    // Prevent impersonating yourself
+    if ($this->is(auth()->user())) {
         return false;
     }
 
@@ -147,19 +142,13 @@ public function canBeImpersonated(): bool
 
 ### canImpersonate()
 
-Determines if this user can impersonate others. The shipped default requires a
-**global** (unscoped) assignment of the configured super-admin role:
+Determines if this user can impersonate others:
 
 ```php
 public function canImpersonate(): bool
 {
-    $superAdminRole = config('authz.super_admin_role');
-
-    if ($superAdminRole) {
-        return UserRoleChecker::hasGlobalRole($this, $superAdminRole);
-    }
-
-    return false;
+    // Only super admins can impersonate
+    return $this->hasRole('super_admin');
 }
 ```
 
