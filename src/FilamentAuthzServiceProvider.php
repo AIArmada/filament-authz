@@ -16,16 +16,29 @@ use AIArmada\FilamentAuthz\Http\Middleware\ImpersonationBannerMiddleware;
 use AIArmada\FilamentAuthz\Services\EntityDiscoveryService;
 use AIArmada\FilamentAuthz\Support\ImpersonationActorAuth;
 use Illuminate\Contracts\Http\Kernel;
-use Illuminate\Support\ServiceProvider;
 use Laravel\Octane\Events\RequestReceived;
 use Laravel\Octane\Events\RequestTerminated;
+use Spatie\LaravelPackageTools\Package;
+use Spatie\LaravelPackageTools\PackageServiceProvider;
 
-class FilamentAuthzServiceProvider extends ServiceProvider
+class FilamentAuthzServiceProvider extends PackageServiceProvider
 {
-    public function register(): void
+    public function configurePackage(Package $package): void
     {
-        $this->mergeConfigFrom(__DIR__ . '/../config/filament-authz.php', 'filament-authz');
+        $package
+            ->name('filament-authz')
+            ->hasConfigFile()
+            ->hasTranslations()
+            ->hasRoutes(['web'])
+            ->hasCommands([
+                DiscoverCommand::class,
+                GeneratePoliciesCommand::class,
+                SeederCommand::class,
+            ]);
+    }
 
+    public function packageRegistered(): void
+    {
         CommandProhibitor::register([
             GeneratePoliciesCommand::class,
             SeederCommand::class,
@@ -41,32 +54,9 @@ class FilamentAuthzServiceProvider extends ServiceProvider
         $this->registerOctaneListeners();
     }
 
-    public function boot(): void
+    public function packageBooted(): void
     {
-        $this->loadTranslationsFrom(__DIR__ . '/../resources/lang', 'filament-authz');
-        $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
         $this->registerImpersonationBanner();
-
-        $this->publishes([
-            __DIR__ . '/../config/filament-authz.php' => config_path('filament-authz.php'),
-        ], 'filament-authz-config');
-
-        $this->publishes([
-            __DIR__ . '/../resources/lang' => $this->app->langPath('vendor/filament-authz'),
-        ], 'filament-authz-translations');
-
-        $this->registerCommands();
-    }
-
-    protected function registerCommands(): void
-    {
-        if ($this->app->runningInConsole()) {
-            $this->commands([
-                DiscoverCommand::class,
-                GeneratePoliciesCommand::class,
-                SeederCommand::class,
-            ]);
-        }
     }
 
     private function registerImpersonationBanner(): void
